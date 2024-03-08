@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
 import { UserService} from "../services/user.service";
-import { UpdateUserDto } from "../dtos/UpdateUser.dto";
 import { User } from "src/typeorm/entities/userElm/User";
 
 @Controller('users')

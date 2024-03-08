@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Question } from "./Question";
 
 @Entity({ name: 'surveys' })
 export class Survey {
@@ -8,11 +9,7 @@ export class Survey {
   @Column()
   title: string;
 
-  //@OneToMany(() => Question, (question) => question.survey, { cascade: true })
-  //@JoinColumn({ name: 'survey_id' })
-  //questions: Question[];
-
-  // Add other properties or relationships as needed
-
-  // ...
+  @OneToMany(() => Question, (question) => question.survey)
+  questions: Question[];
 }
+

@@ -1,7 +1,8 @@
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Injectable } from '@nestjs/common';
+import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: '/survey', transports: ['websocket'] })
 export class SurveyWebSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -14,4 +15,12 @@ export class SurveyWebSocketGateway implements OnGatewayConnection, OnGatewayDis
     console.log(`Client disconnected: ${client.id}`);
   }
 
+  handleSurveyCreation(submittedData: any) {
+    // Handle WebSocket event for survey submission
+    // You can broadcast this event to all connected clients
+    this.server.emit('surveyCreation', submittedData);
+  }
+  handleSurveySubmission(submittedData: any) {
+    this.server.emit('surveyCreation', submittedData);
+  }
 }
