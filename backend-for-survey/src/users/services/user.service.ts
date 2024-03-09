@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm/entities/userElm/User";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
-
+import * as bcrypt from 'bcrypt'
 @Injectable()
 export class UserService {
   constructor(
@@ -12,8 +12,9 @@ export class UserService {
   ) {}
 
   async registerUser(createUserData: CreateUserDto): Promise<User> {
-    const { username, password } = createUserData;
-
+    const {username} = createUserData;
+    const password = bcrypt.hashSync(createUserData.password, 10);
+    
     const existingUser = await this.userRepository.findOne({ where: { username } });
     if (existingUser) {
       throw new Error('Username is already taken');
