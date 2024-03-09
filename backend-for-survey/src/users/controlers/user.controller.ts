@@ -1,16 +1,21 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post, Put, UseGuards } from "@nestjs/common";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
 import { UserService} from "../services/user.service";
-import { User } from "src/typeorm/entities/userElm/User";
 
 @Controller('users')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+      @Inject('USER_SERVICE') private readonly userService:UserService,
+    ) {}
   
     @Post('register')
-    registerUser(@Body() userData: User) {
-      const user = this.userService.registerUser(userData);
-      //const authToken = this.userService.generateAuthToken(user);
-      return { user,} ///authToken };
+    async registerUser(@Body() createUserDto: CreateUserDto){
+      const user = await this.userService.registerUser(createUserDto);
+    }
+
+    @Post('login')
+    loginUser() {
+      // This route will be protected by the JWT authentication guard
+      // Users need to provide a valid JWT token to access this route
     }
 }

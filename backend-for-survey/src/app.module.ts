@@ -7,6 +7,7 @@ import { Survey } from './typeorm/entities/surveyElm/Survey';
 import { Question } from './typeorm/entities/surveyElm/Question';
 import { FilledSurvey } from './typeorm/entities/surveyElm/FilledSurvey';
 import { UserChoice } from './typeorm/entities/surveyElm/UserChoice';
+import { AuthModule } from './authentication/auth.module';
 
 @Module({
   imports: [
@@ -16,10 +17,17 @@ import { UserChoice } from './typeorm/entities/surveyElm/UserChoice';
       port: 5432,
       username: 'testuser',
       password: 'testuser123',
-      database: 'post_db3',
-      entities: [User,Survey,Question,FilledSurvey,UserChoice],
+      database: 'post_db4',
+      entities: [
+        User,
+        Survey,
+        Question,
+        FilledSurvey,
+        UserChoice
+      ],
       synchronize: true,
     }),
+    AuthModule,
     UsersModule,
     SurveyModule,
   ],

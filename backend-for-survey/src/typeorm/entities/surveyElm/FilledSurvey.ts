@@ -1,20 +1,27 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { UserChoice } from "./UserChoice";
 import { Survey } from "./Survey";
 import { User } from "../userElm/User";
-import { UserChoice } from "./UserChoice";
+
 
 @Entity({ name: 'filled_surveys' })
 export class FilledSurvey {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
+
+  @Column()
+  name: string;
   
-  @ManyToOne(() => Survey)
+  @OneToMany(() => UserChoice, (userChoice) => userChoice.filledSurvey, { eager: true })
+  userChoices: UserChoice[];
+
+  @ManyToOne(() => Survey,{ eager: true })
   @JoinColumn({ name: 'surveyId' })
   survey: Survey;
   
-  @Column()
-  userId: User;
+  @ManyToOne(() => User,{ eager: true })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
-  @OneToMany(() => UserChoice, (question) => question.filledSurvey)
-  choices: UserChoice[];
+  
 }

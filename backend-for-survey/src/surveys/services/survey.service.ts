@@ -3,19 +3,40 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from 'src/typeorm/entities/surveyElm/Question';
 import { Survey } from 'src/typeorm/entities/surveyElm/Survey';
 import { Repository } from 'typeorm';
+import { CreateSurveyDto } from '../dtos/CreateSurvey.dto';
 
 @Injectable()
 export class SurveyService {
   constructor(
     @InjectRepository(Survey)
     private readonly surveyRepository: Repository<Survey>,
+    @InjectRepository(Question)
+    private readonly questionRepository: Repository<Question>
     
   ) {}
     
-  async createSurvey(title: string): Promise<Survey> {
-    const newSurvey = this.surveyRepository.create({ title });
+  async createSurvey(createSurveyData: CreateSurveyDto): Promise<Survey> {
+    const createSurvey = createSurveyData;
 
-    return await this.surveyRepository.save(newSurvey);
+    const survey = new Survey();
+    survey.title = createSurvey.title;
+    
+    const createdSurvey = await this.surveyRepository.save(survey);
+
+    if (createSurvey.createQuestionDtos && createSurvey.createQuestionDtos.length > 0) {
+      const questionEntities = createSurvey.createQuestionDtos.map((questionData) => {
+        return this.questionRepository.create({
+          ...questionData,
+          survey: createdSurvey,
+        });
+      });
+  
+      await this.questionRepository.save(questionEntities);
+
+      createdSurvey.questions = questionEntities;
+    }
+  
+    return createdSurvey;
   }
 
   async getSurveyById(surveyId: number): Promise<Survey | undefined> {

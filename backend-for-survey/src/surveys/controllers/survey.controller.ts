@@ -1,6 +1,9 @@
 import { SurveyService } from "../services/survey.service";
 import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post, UseGuards } from "@nestjs/common";
 import { SurveyWebSocketGateway } from "../websocket/websocket.gateway";
+import { Survey } from "src/typeorm/entities/surveyElm/Survey";
+import { CreateSurveyDto } from "../dtos/CreateSurvey.dto";
+import { AuthGuard } from "@nestjs/passport";
 @Controller('surveys')
 export class SurveyController {
   constructor(
@@ -8,10 +11,9 @@ export class SurveyController {
     private readonly surveyGateway: SurveyWebSocketGateway,
   ) {}
 
-  @Post('create')
-  @UseGuards() // Apply authentication guard if needed
-  createSurvey(@Body() surveyData: any) {
-    const createdSurvey = this.surveyService.createSurvey(surveyData);
+  @Post('create')// Apply authentication guard if needed
+  createSurvey(@Body() createSurveyData: CreateSurveyDto): Promise<Survey> {
+    const createdSurvey = this.surveyService.createSurvey(createSurveyData);
     this.surveyGateway.handleSurveyCreation(createdSurvey);
     return createdSurvey;
   }
