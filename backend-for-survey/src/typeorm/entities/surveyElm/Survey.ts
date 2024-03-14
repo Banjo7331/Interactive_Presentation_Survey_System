@@ -1,5 +1,6 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Question } from "./Question";
+import { User } from "../userElm/User";
 
 @Entity({ name: 'surveys' })
 export class Survey {
@@ -11,5 +12,9 @@ export class Survey {
 
   @OneToMany(() => Question, (question) => question.survey)
   questions: Question[];
+  
+  @JoinColumn({ name: 'userId' })
+  @ManyToOne(() => User, user => user.surveys, { nullable: true })
+  user: User; 
 }
 
