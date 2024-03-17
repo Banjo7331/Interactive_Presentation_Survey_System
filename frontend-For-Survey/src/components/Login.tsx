@@ -16,8 +16,14 @@ export default function Login() {
     event.preventDefault();
     axios.post("http://localhost:3000/auth/login", values)
         .then(res =>{ 
-            navigate('/menu')
-        })
+          if (res.data) {
+              localStorage.setItem('token', res.data);
+              console.log(res.data);
+              navigate('/menu');
+          } else {
+              console.log('Token not found in response data.');
+          }
+         })
         .catch(err => console.log(err));
   };
 

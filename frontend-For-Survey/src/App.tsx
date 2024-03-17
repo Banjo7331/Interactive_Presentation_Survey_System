@@ -5,14 +5,19 @@ import Login from './components/Login'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Signup from './components/Signup'
 import Menu from './components/Menu'
+import CreateSurvey from './components/CreateSurvey'
 
 function App() {
+
+  localStorage.removeItem('token');
+  
   return(
     <BrowserRouter>
     <Routes>
       <Route path='/' element={<Login></Login>}></Route>
       <Route path='/signup' element={<Signup></Signup>}></Route>
-      <Route path='/menu' element={<Menu></Menu>}></Route>
+      <Route path='/menu/*' element={<Menu></Menu>}>
+      </Route>
     </Routes>
     </BrowserRouter>
   )
