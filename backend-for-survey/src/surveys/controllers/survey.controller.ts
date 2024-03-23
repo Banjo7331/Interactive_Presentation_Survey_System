@@ -5,11 +5,15 @@ import { Survey } from "src/typeorm/entities/surveyElm/Survey";
 import { CreateSurveyDto } from "../dtos/CreateSurvey.dto";
 import { AuthGuard } from "@nestjs/passport";
 import { JwtAuthGuard } from "src/authentication/guards/jwt.guard";
+import { SurveyRoomService } from "../services/surveyRoom.service";
+import { CreatedFilledSurveyDto } from "../dtos/CreateFilledSurvey.dto";
+import { FilledSurvey } from "src/typeorm/entities/surveyElm/FilledSurvey";
 @Controller('surveys')
 export class SurveyController {
   constructor(
     private readonly surveyService: SurveyService,
     private readonly surveyGateway: SurveyWebSocketGateway,
+    private readonly roomService: SurveyRoomService,
   ) {}
   @UseGuards(JwtAuthGuard)
   @Post('create')
@@ -32,10 +36,16 @@ export class SurveyController {
     await this.surveyService.deleteSurvey(surveyId);
   }
 
-  @Post('submit')
-  submitSurvey(@Param('id', ParseIntPipe) surveyId: number, @Body() submissionData: any) {
-    const submittedSurvey = this.surveyService.submitSurvey(surveyId, submissionData);
+  @Post(':id/submit')
+  submitSurvey(@Request() req,@Param('id', ParseIntPipe) surveyId: number, @Body() createSurveyAnswerData: CreatedFilledSurveyDto): Promise<FilledSurvey> {
+    const user = req.user;
+    createSurveyAnswerData.user = user;
+    const submittedSurvey = this.surveyService.submitSurvey(surveyId, createSurveyAnswerData);
     this.surveyGateway.handleSurveySubmission(submittedSurvey);
     return submittedSurvey;
+  }
+  @Post(':id/create-room')
+  createRoom(@Param('id') surveyId: string, @Body() surveyData: any) {
+    return this.roomService.createRoom(surveyId, surveyData);
   }
 }

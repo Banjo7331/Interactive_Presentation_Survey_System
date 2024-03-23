@@ -3,16 +3,20 @@ import { useState } from 'react';
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     // Check if token exists in local storage
-    return !!localStorage.getItem('token');
+   // const token = localStorage.getItem('token');
+    const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
+    return /*!!token ||*/ !!tokenCookie;
 });
 
   const login = (token: string) => {
-    localStorage.setItem('token', token);
+    const expiryDate = new Date();
+    expiryDate.setTime(expiryDate.getTime() + (1 * 60 * 20 * 1000)); // 1 godzina w milisekundach
+    document.cookie = `token=${token}; path=/; expires=${expiryDate.toUTCString()}`;
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
     setIsAuthenticated(false);
   };
 
