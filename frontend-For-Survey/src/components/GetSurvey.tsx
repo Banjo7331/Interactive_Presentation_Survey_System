@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 
 interface QuestionDto {
   title: string;
@@ -60,6 +60,9 @@ export default function GetSurvey() {
       // Handle error, display message to the user, etc.
     }
   };
+  const handleViewResults = () => {
+    navigate(`/survey-results/${surveyId}`);
+  };
 
   return (
     <div>
@@ -86,6 +89,7 @@ export default function GetSurvey() {
               </li>
             ))}
           </ul>
+          <button onClick={handleViewResults}>View Results</button>
         </>
       )}
     </div>

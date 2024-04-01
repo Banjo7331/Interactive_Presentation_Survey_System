@@ -8,6 +8,7 @@ import { Question } from './typeorm/entities/surveyElm/Question';
 import { FilledSurvey } from './typeorm/entities/surveyElm/FilledSurvey';
 import { UserChoice } from './typeorm/entities/surveyElm/UserChoice';
 import { AuthModule } from './authentication/auth.module';
+import { SocketIoAdapter } from './surveys/websocket/socketAdapter';
 
 @Module({
   imports: [
@@ -32,6 +33,10 @@ import { AuthModule } from './authentication/auth.module';
     SurveyModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+   // { provide: 'PORT', useValue: 3000 }, // Port serwera socket.io
+   // { provide: 'SOCKET_IO_OPTIONS', useValue: {} }, // Opcjonalne dodatkowe opcje socket.io
+   // { provide: 'SOCKET_IO_ADAPTER', useClass: SocketIoAdapter } // Użyj adaptera socket.io
+  ],
 })
 export class AppModule {}

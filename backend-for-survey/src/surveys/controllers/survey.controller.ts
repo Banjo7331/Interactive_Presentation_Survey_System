@@ -8,6 +8,7 @@ import { JwtAuthGuard } from "src/authentication/guards/jwt.guard";
 import { SurveyRoomService } from "../services/surveyRoom.service";
 import { CreatedFilledSurveyDto } from "../dtos/CreateFilledSurvey.dto";
 import { FilledSurvey } from "src/typeorm/entities/surveyElm/FilledSurvey";
+
 @Controller('surveys')
 export class SurveyController {
   constructor(
@@ -21,7 +22,7 @@ export class SurveyController {
     const user = req.user;
     createSurveyData.user = user;
     const createdSurvey = this.surveyService.createSurvey(createSurveyData);
-    this.surveyGateway.handleSurveyCreation(createdSurvey);
+    this.surveyGateway.handleSurveyCreation(null,createdSurvey);
     return createdSurvey;
   }
 
@@ -37,11 +38,12 @@ export class SurveyController {
   }
 
   @Post(':id/submit')
-  submitSurvey(@Request() req,@Param('id', ParseIntPipe) surveyId: number, @Body() createSurveyAnswerData: CreatedFilledSurveyDto): Promise<FilledSurvey> {
+  async submitSurvey(@Request() req,@Param('id', ParseIntPipe) surveyId: number, @Body() createSurveyAnswerData: CreatedFilledSurveyDto): Promise<FilledSurvey> {
     const user = req.user;
     createSurveyAnswerData.user = user;
-    const submittedSurvey = this.surveyService.submitSurvey(surveyId, createSurveyAnswerData);
-    this.surveyGateway.handleSurveySubmission(submittedSurvey);
+    const submittedSurvey = await this.surveyService.submitSurvey(surveyId, createSurveyAnswerData);
+    await this.surveyGateway.handleSurveySubmission(null,submittedSurvey);
+    console.log(submittedSurvey);
     return submittedSurvey;
   }
   @Post(':id/create-room')

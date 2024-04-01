@@ -8,6 +8,7 @@ import Menu from './components/Menu'
 import CreateSurvey from './components/CreateSurvey'
 import { useAuth } from './utils/IsLogged'
 import SurveyRoom from './components/SurveyRoom'
+import SurveyResultsPage from './components/SurveyRoomResults'
 
 function App() {
   const { isAuthenticated, login } = useAuth();
@@ -29,6 +30,7 @@ function App() {
       <Route path='/signup' element={<Signup></Signup>}></Route>
       <Route path='/menu/*' element={<Menu></Menu>}></Route>
       <Route path="/survey-room/:surveyId" element={<SurveyRoom />} />
+      <Route path="/survey-results/:surveyId" element={<SurveyResultsPage/>} />
     </Routes>
     </BrowserRouter>
   )

@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ namespace: '/survey/room', transports: ['websocket'] })
+@Injectable()
+@WebSocketGateway()
 export class SurveyWebSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -15,12 +16,19 @@ export class SurveyWebSocketGateway implements OnGatewayConnection, OnGatewayDis
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  handleSurveyCreation(submittedData: any) {
+  @SubscribeMessage('surveyCreation')
+  handleSurveyCreation(client: Socket, submittedData: any) {
+    // Handle WebSocket event for survey creation
+    // You can broadcast this event to all connected clients
+    this.server.emit('surveyCreated', submittedData);
+  }
+
+  // Optionally, you can handle survey submission separately
+  @SubscribeMessage('surveySubmission')
+  handleSurveySubmission(client: Socket, submittedData: any) {
     // Handle WebSocket event for survey submission
     // You can broadcast this event to all connected clients
-    this.server.emit('surveyCreation', submittedData);
-  }
-  handleSurveySubmission(submittedData: any) {
-    this.server.emit('surveyCreation', submittedData);
+    console.log(submittedData)
+    this.server.emit('surveySubmitted', submittedData);
   }
 }

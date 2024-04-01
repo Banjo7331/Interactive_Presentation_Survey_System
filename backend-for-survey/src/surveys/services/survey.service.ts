@@ -109,6 +109,11 @@ export class SurveyService {
       createdFilledSurvey.userChoices = filteredUserAnswers;
     }
 
-    return createdFilledSurvey;
+    //return createdFilledSurvey;
+
+    const id = createdFilledSurvey.id;
+    const submitedSurvey = await this.filledSurveyRepository.findOne({ where: { id },  relations: ['userChoices'] });
+    //console.log(submitedSurvey)
+    return submitedSurvey;
   }
 }
