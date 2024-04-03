@@ -7,12 +7,12 @@ export class User {
     id:number;
     @Column({unique: true})
     username: string;
+    @Column({unique: true})
+    email: string;
     @Column()
     password: string;
     @Column()
     createdAt: Date;
-    @Column({nullable: true})
-    authStrategy: string;
 
     @OneToMany(() => Survey, survey => survey.user)
     surveys: Survey[];

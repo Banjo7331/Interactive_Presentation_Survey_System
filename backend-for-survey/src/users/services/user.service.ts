@@ -14,20 +14,36 @@ export class UserService {
   ) {}
 
   async registerUser(createUserData: CreateUserDto): Promise<User> {
-    const {username} = createUserData;
+    console.log('Registering user:', createUserData);
+  
+    const {username,email} = createUserData;
     const password = bcrypt.hashSync(createUserData.password, 10);
     
     const existingUser = await this.userRepository.findOne({ where: { username } });
     if (existingUser) {
+      console.error('Username is already taken:', username);
       throw new Error('Username is already taken');
     }
-    const newUser = this.userRepository.create({ username, password, createdAt: new Date() });
-
+    const existingUserWithSameEmail = await this.userRepository.findOne({ where: { email } });
+    if (existingUserWithSameEmail) {
+      console.error('Email is already in use:', email);
+      throw new Error('Email is already in use');
+    }
+  
+    const newUser = this.userRepository.create({ username, password,email, createdAt: new Date() });
+    console.log('New user:', newUser);
+  
     return await this.userRepository.save(newUser);
+    //console.log('Saved user:', savedUser);
   }
-
-  findUserByUsername(username: string){
+  async updateUser(user: User): Promise<User> {
+    return await this.userRepository.save(user);
+  }
+  async findUserByUsername(username: string){
     return this.userRepository.findOne({ where: { username } });
+  }
+  async findUserById(id: number): Promise<User> {
+    return await this.userRepository.findOne({ where: { id } });
   }
   async addSurveyToUser(userId: number, survey: Survey): Promise<User> {
     const id = userId

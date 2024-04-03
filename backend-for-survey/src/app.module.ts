@@ -18,7 +18,7 @@ import { SocketIoAdapter } from './surveys/websocket/socketAdapter';
       port: 5432,
       username: 'testuser',
       password: 'testuser123',
-      database: 'post_db4',
+      database: 'post_db5',
       entities: [
         User,
         Survey,

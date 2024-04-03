@@ -5,7 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'
 export default function Signup() {
     const [values, setValues] = useState({
         username: '',
-        password: ''
+        password: '',
+        email: '',
       })
       const navigate = useNavigate()
       const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +26,11 @@ export default function Signup() {
             <div className='bg-white p-3 rounded w-25'>
                 <h2>Sign-Up</h2>
                 <form action='' onSubmit={handleSubmit}>
+                    <div className='mb-3'>
+                        <label><strong>Email</strong></label>
+                        <input name="email" placeholder='Enter Email' 
+                        onChange={handleInput} className="form-control rounded-0"></input>
+                    </div>
                     <div className='mb-3'>
                         <label><strong>Username</strong></label>
                         <input name="username" placeholder='Enter Username' 

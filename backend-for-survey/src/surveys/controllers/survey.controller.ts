@@ -1,5 +1,5 @@
 import { SurveyService } from "../services/survey.service";
-import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post, UseGuards, Request, UnauthorizedException, Delete } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post, UseGuards, Request, UnauthorizedException, Delete, UsePipes, ValidationPipe } from "@nestjs/common";
 import { SurveyWebSocketGateway } from "../websocket/websocket.gateway";
 import { Survey } from "src/typeorm/entities/surveyElm/Survey";
 import { CreateSurveyDto } from "../dtos/CreateSurvey.dto";
@@ -8,6 +8,7 @@ import { JwtAuthGuard } from "src/authentication/guards/jwt.guard";
 import { SurveyRoomService } from "../services/surveyRoom.service";
 import { CreatedFilledSurveyDto } from "../dtos/CreateFilledSurvey.dto";
 import { FilledSurvey } from "src/typeorm/entities/surveyElm/FilledSurvey";
+import { QuestionTypeValidationPipe } from "../pipes/question-type-validation.pipe";
 
 @Controller('surveys')
 export class SurveyController {
@@ -17,6 +18,9 @@ export class SurveyController {
     private readonly roomService: SurveyRoomService,
   ) {}
   @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe(),
+    new QuestionTypeValidationPipe(),
+  )
   @Post('create')
   async createSurvey(@Request() req,@Body() createSurveyData: CreateSurveyDto ): Promise<Survey> { 
     const user = req.user;
