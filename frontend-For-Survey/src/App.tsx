@@ -10,6 +10,7 @@ import { useAuth } from './utils/IsLogged'
 import SurveyRoom from './components/SurveyRoom'
 import SurveyResultsPage from './components/SurveyRoomResults'
 import VerifyEmailPage from './components/VerifyEmail'
+import WaitingForVerificationPage from './components/WaitingForVerification'
 
 function App() {
   const { isAuthenticated, login } = useAuth();
@@ -28,11 +29,12 @@ function App() {
     <BrowserRouter>
     <Routes>
       <Route path='/' element={<Login></Login>}></Route>
-      <Route path='/signup' element={<Signup></Signup>}></Route>
+      <Route path='/signup/' element={<Signup></Signup>}></Route>
       <Route path='/menu/*' element={<Menu></Menu>}></Route>
       <Route path="/survey-room/:surveyId" element={<SurveyRoom />} />
       <Route path="/survey-results/:surveyId" element={<SurveyResultsPage/>} />
       <Route path="/verify-email" element={<VerifyEmailPage/>} />
+      <Route path="/waiting/:email" element={<WaitingForVerificationPage />} />
     </Routes>
     </BrowserRouter>
   )

@@ -11,6 +11,10 @@ export class User {
     email: string;
     @Column()
     password: string;
+    
+    @Column({ default: false })
+    isVerified: boolean;
+    
     @Column()
     createdAt: Date;
 

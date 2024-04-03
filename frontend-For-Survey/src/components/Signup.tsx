@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Route, Routes, useNavigate } from 'react-router-dom'
+import WaitingForVerificationPage from './WaitingForVerification';
 
 export default function Signup() {
     const [values, setValues] = useState({
@@ -17,7 +18,8 @@ export default function Signup() {
         event.preventDefault();
         axios.post("http://localhost:3000/auth/register", values)
         .then(res =>{ 
-            navigate('/')
+            console.log(values.email);
+            navigate(`/waiting/${values.email}`);
         })
         .catch(err => console.log(err));
       };

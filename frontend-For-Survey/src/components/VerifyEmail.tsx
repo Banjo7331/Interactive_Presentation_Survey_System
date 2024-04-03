@@ -30,10 +30,14 @@ function VerifyEmailPage() {
     }, []);
 
     if (loading) {
-        return <p>Loading...</p>;
-      }
+        return (
+          <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+            <h2>Verifying your email...</h2>
+          </div>
+        );
+    }
       
-      if (success) {
+    if (success) {
         return (
           <div>
             <p>Email verification successful!</p>
@@ -42,9 +46,9 @@ function VerifyEmailPage() {
             </div>
           </div>
         );
-      } else {
+    } else {
         return <p>Email verification failed.</p>;
-      }
+    }
 }
 
 export default VerifyEmailPage;

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm/entities/userElm/User";
 import { Repository } from "typeorm";
@@ -29,8 +29,8 @@ export class UserService {
       console.error('Email is already in use:', email);
       throw new Error('Email is already in use');
     }
-  
-    const newUser = this.userRepository.create({ username, password,email, createdAt: new Date() });
+    const isVerified = true;
+    const newUser = this.userRepository.create({ username, password,email,isVerified, createdAt: new Date() });
     console.log('New user:', newUser);
   
     return await this.userRepository.save(newUser);
@@ -62,6 +62,16 @@ export class UserService {
     await this.userRepository.save(user);
 
     return user;
+  }
+
+  async isVerified(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { email } });
+  
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+  
+    return user.isVerified;
   }
 }
 

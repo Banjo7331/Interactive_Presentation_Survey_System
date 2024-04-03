@@ -52,4 +52,10 @@ export class AuthController{
         throw new BadRequestException('Invalid verification token.');
       }
     }
+
+    @Get('is-verified')
+    async isVerified(@Query('email') email: string) {
+      const isVerified = await this.userService.isVerified(email);
+      return { isVerified };
+    }
 }
