@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import { aggregateData } from '../utils/agregateData';
+import { useAuth } from '../utils/IsLogged';
 
 
 interface UserChoice {
@@ -36,17 +37,24 @@ interface FilledSurvey {
 const SurveyResultsPage = () => {
   const [surveyResults, setSurveyResults] = useState<FilledSurvey[]>([]);
   const [data, setData] = useState<Record<string, Record<string, number>> | null>(null);
-  const { surveyId } = useParams();
+  const { surveyId, roomId } = useParams();
   const [ws, setWS] = React.useState<Socket | null>(null)
   const wsRef = React.useRef<Socket | null>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
-
+  
+  const { isAuthenticated } = useAuth();
   useEffect(() => {
     // Establish WebSocket connection
     const fetchSurvey = async () => {
       if (!surveyId) return;
       try {
-        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`);
+        if (!isAuthenticated) {
+          throw new Error('Token not found in localStorage');
+        }
+        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+        const headers = { Authorization: `Bearer ${tokenCookie}` };
+        console.log('Request headers:', headers);
+        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
         setSurvey(response.data);
       } catch (error) {
         console.error('Error fetching survey:', error);
@@ -119,8 +127,27 @@ const SurveyResultsPage = () => {
     );
   }) || null; // Render nothing if survey is null
 
+  const deleteRoom = async () => {
+    try {
+      if (!isAuthenticated) {
+        throw new Error('Token not found in localStorage');
+      }
+      const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+      const headers = { Authorization: `Bearer ${tokenCookie}` };
+      console.log('Request headers:', headers);
+      await axios.delete(`http://localhost:3000/surveys/${roomId}/close-room`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+      
+    } catch (error) {
+      console.error('Error deleting room:', error);
+    }
+  };
+
   return (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <button onClick={deleteRoom}>Close Room</button>
+        <p>http://localhost:5173/survey-room/{surveyId}/{roomId}</p>
+      </div>
       {charts}
     </div>
   );

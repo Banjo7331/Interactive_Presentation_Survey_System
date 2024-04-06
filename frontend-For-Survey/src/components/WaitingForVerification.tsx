@@ -30,9 +30,11 @@ function WaitingForVerificationPage() {
   }, [isVerified, navigate]);
 
   return (
-    <div>
-      <h2>Registration successful!</h2>
-      <p>Please check your email for a verification link.</p>
+    <div className="container text-center">
+      <div className="alert alert-primary mt-5" role="alert">
+        <h2 className="alert-heading">Waiting for e-mail verification</h2>
+        <p>Please check your email for a verification link.</p>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../utils/IsLogged';
 
 interface Survey {
     id: number;
@@ -31,17 +32,30 @@ interface SubmitSurveyDto {
   }
 
 const SurveyRoom = () => {
-    const { surveyId } = useParams();
+    const { surveyId, roomId } = useParams();
     const intSurveyId = parseInt(surveyId!);
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [filledSurvey, setFilledSurvey] = useState<SubmitSurveyDto | null>(null);
     const [selectedOptions, setSelectedOptions] = useState<{[key: number]: string}>({});
-  
+
+    const [submissionStatus, setSubmissionStatus] = useState('not submitted');
+
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const { isAuthenticated } = useAuth();
+    
+    const navigate = useNavigate();
     useEffect(() => {
       const fetchSurvey = async () => {
         if (!surveyId) return;
         try {
-          const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`);
+          if (!isAuthenticated) {
+            throw new Error('Token not found in localStorage');
+          }
+          const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+          const headers = { Authorization: `Bearer ${tokenCookie}` };
+          console.log('Request headers:', headers);
+          const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
           setSurvey(response.data);
         } catch (error) {
           console.error('Error fetching survey:', error);
@@ -50,6 +64,26 @@ const SurveyRoom = () => {
   
       fetchSurvey();
     }, [surveyId]);
+
+    useEffect(() => {
+      const joinRoom = async () => {
+        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+        const headers = { Authorization: `Bearer ${tokenCookie}` };
+  
+        // Join the room
+        await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers: { Authorization: `Bearer ${tokenCookie}` } });
+      };
+  
+      joinRoom();
+    }, []);
+
+    useEffect(() => {
+      if (submissionStatus === 'submitted') {
+        setTimeout(() => {
+          navigate('/menu'); // Replace '/menu' with the path to your menu page
+        }, 5000);
+      }
+    }, [submissionStatus]);
   
     const handleOptionChange = (questionId: number, e: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = e.target;
@@ -74,16 +108,26 @@ const SurveyRoom = () => {
         setFilledSurvey(filledSurveyData);
         console.log(filledSurvey)
         try {
-            const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/submit`, filledSurveyData);
+            const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+
+            const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
             console.log('Wypełniona ankieta została pomyślnie przesłana:', response.data);
+            setErrorMessage('');
+            setSubmissionStatus('submitted');
           } catch (error) {
             console.error('Błąd podczas przesyłania wypełnionej ankiety:', error);
+            if ((error as any).response && (error as any).response.status === 403) {
+              setErrorMessage('You have already submitted this survey');
+            }
         }
     };
   
     return (
       <div>
-        {survey && (
+        {submissionStatus === 'submitted' ? (
+          <p>Thanks for submitting the survey! You will be redirected to the menu in a few seconds.</p>
+        ) : (
+        survey && (
           <>
             <h2>{survey.title}</h2>
             <p>ID: {survey.id}</p>
@@ -114,8 +158,10 @@ const SurveyRoom = () => {
               ))}
             </ul>
             <button onClick={handleSubmit}>Wyślij</button>
+            {errorMessage && <p>{errorMessage}</p>}
           </>
-        )}
+        )
+      )}
       </div>
     );
   };

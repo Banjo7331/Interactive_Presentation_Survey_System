@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import axios from 'axios';
 import { Route, Routes, useNavigate } from 'react-router-dom';
+import { useAuth } from '../utils/IsLogged';
 
 interface QuestionDto {
   title: string;
@@ -18,12 +19,23 @@ export default function GetSurvey() {
   const [survey, setSurvey] = useState<SurveyDto | null>(null);
   const [surveyId, setSurveyId] = useState<number>(0); // ID ankiety, którą chcesz pobrać
   const navigate = useNavigate();
+  const [roomId, setRoomId] = useState<Object>({});
+  const [roomClosed, setRoomClosed] = useState<boolean>(false);
   
+
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
     const fetchSurvey = async () => {
       if (!surveyId) return; // Nie pobieraj, jeśli nie ma ID ankiety
       try {
-        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`);
+        if (!isAuthenticated) {
+          throw new Error('Token not found in localStorage');
+        }
+        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+        const headers = { Authorization: `Bearer ${tokenCookie}` };
+        console.log('Request headers:', headers);
+        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
         console.log(response);
         setSurvey(response.data);
       } catch (error) {
@@ -33,6 +45,7 @@ export default function GetSurvey() {
 
     fetchSurvey();
   }, [surveyId]);
+  
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -45,7 +58,7 @@ export default function GetSurvey() {
 
   const [roomCreated, setRoomCreated] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  /*const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form submitted');
     try {
@@ -59,9 +72,32 @@ export default function GetSurvey() {
       console.error('Error creating survey room:', error);
       // Handle error, display message to the user, etc.
     }
+  };*/
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if (!isAuthenticated) {
+        throw new Error('Token not found in localStorage');
+      }
+      const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+      console.log('Token:', tokenCookie)
+      const headers = { Authorization: `Bearer ${tokenCookie}` };
+      console.log('Request headers:', headers);
+      const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/create-room`,{},{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+      const roomId2 = response.data.id;
+      setRoomId(response.data);
+      console.log('Survey room created from usestate:', roomId);
+      console.log('Survey room created:', response.data);
+      console.log('Room ID:', roomId2);
+      console.log('Room ID in useState:', roomId);
+      setRoomCreated(true);
+      navigate(`/survey-results/${surveyId}/${roomId2}`); // Use both surveyId and roomId in the URL
+    } catch (error) {
+      console.error('Error creating survey room:', error);
+    }
   };
   const handleViewResults = () => {
-    navigate(`/survey-results/${surveyId}`);
+    navigate(`/survey-results/${surveyId}/${roomId}`);
   };
 
   return (
