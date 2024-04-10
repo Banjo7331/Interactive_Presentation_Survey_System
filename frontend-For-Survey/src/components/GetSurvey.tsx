@@ -96,9 +96,6 @@ export default function GetSurvey() {
       console.error('Error creating survey room:', error);
     }
   };
-  const handleViewResults = () => {
-    navigate(`/survey-results/${surveyId}/${roomId}`);
-  };
 
   return (
     <div>
@@ -125,7 +122,6 @@ export default function GetSurvey() {
               </li>
             ))}
           </ul>
-          <button onClick={handleViewResults}>View Results</button>
         </>
       )}
     </div>

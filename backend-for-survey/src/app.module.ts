@@ -9,6 +9,8 @@ import { FilledSurvey } from './typeorm/entities/surveyElm/FilledSurvey';
 import { UserChoice } from './typeorm/entities/surveyElm/UserChoice';
 import { AuthModule } from './authentication/auth.module';
 import { SocketIoAdapter } from './surveys/websocket/socketAdapter';
+import { SurveyRoomResult } from './typeorm/entities/surveyElm/SurveyRoomResult';
+import { QuestionRoomResult } from './typeorm/entities/surveyElm/QuestionRoomResult';
 
 @Module({
   imports: [
@@ -23,8 +25,8 @@ import { SocketIoAdapter } from './surveys/websocket/socketAdapter';
         User,
         Survey,
         Question,
-        FilledSurvey,
-        UserChoice
+        SurveyRoomResult,
+        QuestionRoomResult
       ],
       synchronize: true,
     }),

@@ -1,5 +1,4 @@
 interface UserChoice {
-    id: number;
     answer: any[]; // Replace 'any' with the actual type of the elements in the 'answer' array
   }
   
@@ -8,7 +7,6 @@ interface UserChoice {
     title: string;
 }
 interface FilledSurvey {
-    id: string;
     name: string;
     userChoices: UserChoice[];
     survey: Survey;

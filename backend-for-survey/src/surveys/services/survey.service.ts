@@ -7,8 +7,7 @@ import { CreateSurveyDto } from '../dtos/CreateSurvey.dto';
 import { User } from 'src/typeorm/entities/userElm/User';
 import { UserService } from 'src/users/services/user.service';
 import { CreatedFilledSurveyDto } from '../dtos/CreateFilledSurvey.dto';
-import { FilledSurvey } from 'src/typeorm/entities/surveyElm/FilledSurvey';
-import { UserChoice } from 'src/typeorm/entities/surveyElm/UserChoice';
+import { FilledSurvey, UserChoice } from 'src/typeorm/entities/userElm/UserResponseForSurvey';
 
 @Injectable()
 export class SurveyService {
@@ -17,10 +16,10 @@ export class SurveyService {
     private readonly surveyRepository: Repository<Survey>,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
-    @InjectRepository(FilledSurvey)
-    private readonly filledSurveyRepository: Repository<FilledSurvey>,
-    @InjectRepository(UserChoice)
-    private readonly userChoiceRepository: Repository<UserChoice>,
+    //@InjectRepository(FilledSurvey)
+    //private readonly filledSurveyRepository: Repository<FilledSurvey>,
+    //@InjectRepository(UserChoice)
+    //private readonly userChoiceRepository: Repository<UserChoice>,
     @Inject('USER_SERVICE') private readonly userService:UserService,
   ) {}
     
@@ -80,40 +79,32 @@ export class SurveyService {
     surveyAttempt.user = createFilledSurveyData.user;
     surveyAttempt.name = createFilledSurveyData.name;
   
-    const createdFilledSurvey = await this.filledSurveyRepository.save(surveyAttempt);
+    // Don't save the surveyAttempt to the database
+    const createdFilledSurvey = surveyAttempt;
 
     if (createFilledSurveyData.userChoices && createFilledSurveyData.userChoices.length > 0) {
       const userAnswers = createFilledSurveyData.userChoices.map((userData, index) => {
           const question = survey.questions[index]; // Pobierz pytanie na podstawie indeksu
-  
+    
           // Sprawdź, czy pytanie zostało znalezione
           if (question) {
-              return this.userChoiceRepository.create({
-                  ...userData,
-                  filledSurvey: createdFilledSurvey,
-                  question: question, // Powiąż pytanie z odpowiedzią użytkownika
-              });
+              const userChoice = new UserChoice();
+              Object.assign(userChoice, userData);
+              userChoice.question = question;
+              return userChoice;
           } else {
               // Jeśli pytanie nie zostało znalezione, zwróć null
               return null;
           }
       });
-  
+    
       // Usuń ewentualne wartości null z tablicy
       const filteredUserAnswers = userAnswers.filter((answer) => answer !== null);
-  
-      // Zapisz odpowiedzi użytkownika do bazy danych
-      await this.userChoiceRepository.save(filteredUserAnswers);
-  
+    
       // Zaktualizuj dane użytkownika, aby zawierały powiązane pytania
       createdFilledSurvey.userChoices = filteredUserAnswers;
     }
-
-    //return createdFilledSurvey;
-
-    const id = createdFilledSurvey.id;
-    const submitedSurvey = await this.filledSurveyRepository.findOne({ where: { id },  relations: ['userChoices'] });
-    //console.log(submitedSurvey)
-    return submitedSurvey;
+    
+    return createdFilledSurvey;
   }
 }

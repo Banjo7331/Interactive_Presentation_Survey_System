@@ -15,10 +15,6 @@ interface QuestionDto {
     type: string;
     possibleChoices: string[];
 }
-  
-interface Props {
-    survey: Survey;
-}
 
 interface SubmitSurveyDto {
     name: string; // Name of the filled survey
@@ -37,7 +33,7 @@ const SurveyRoom = () => {
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [filledSurvey, setFilledSurvey] = useState<SubmitSurveyDto | null>(null);
     const [selectedOptions, setSelectedOptions] = useState<{[key: number]: string}>({});
-
+    const [roomError, setRoomError] = useState('');
     const [submissionStatus, setSubmissionStatus] = useState('not submitted');
 
     const [errorMessage, setErrorMessage] = useState('');
@@ -71,7 +67,14 @@ const SurveyRoom = () => {
         const headers = { Authorization: `Bearer ${tokenCookie}` };
   
         // Join the room
-        await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers: { Authorization: `Bearer ${tokenCookie}` } });
+        try {
+          // Join the room
+          await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers: { Authorization: `Bearer ${tokenCookie}` } });
+        } catch (error: any) {
+          if (error.response && error.response.status === 404) {
+            setRoomError(`Room with ID ${roomId} not found`);
+          }
+        }
       };
   
       joinRoom();
@@ -124,6 +127,10 @@ const SurveyRoom = () => {
   
     return (
       <div>
+        {roomError ? (
+          <p>{roomError}</p>
+        ) : (
+        <div>
         {submissionStatus === 'submitted' ? (
           <p>Thanks for submitting the survey! You will be redirected to the menu in a few seconds.</p>
         ) : (
@@ -162,6 +169,9 @@ const SurveyRoom = () => {
           </>
         )
       )}
+    
+      </div>
+    )}
       </div>
     );
   };

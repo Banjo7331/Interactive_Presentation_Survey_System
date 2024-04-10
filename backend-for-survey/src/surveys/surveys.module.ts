@@ -10,8 +10,10 @@ import { User } from "src/typeorm/entities/userElm/User";
 import { FilledSurvey } from "../typeorm/entities/surveyElm/FilledSurvey";
 import { UserService } from "src/users/services/user.service";
 import { SurveyRoomService } from "./services/surveyRoom.service";
+import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
+import { QuestionRoomResult } from "src/typeorm/entities/surveyElm/QuestionRoomResult";
 @Module({
-  imports: [TypeOrmModule.forFeature([Survey,Question,FilledSurvey,User,UserChoice,])],
+  imports: [TypeOrmModule.forFeature([Survey,Question,User,SurveyRoomResult,QuestionRoomResult])],
   providers: [SurveyService, 
     SurveyRoomService,
     SurveyWebSocketGateway,

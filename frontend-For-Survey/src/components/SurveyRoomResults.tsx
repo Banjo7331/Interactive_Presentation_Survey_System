@@ -9,7 +9,6 @@ import { useAuth } from '../utils/IsLogged';
 
 
 interface UserChoice {
-  id: number;
   answer: any[]; // Replace 'any' with the actual type of the elements in the 'answer' array
 }
 
@@ -27,11 +26,21 @@ interface QuestionDto {
 }
 
 interface FilledSurvey {
-  id: string;
   name: string;
   userChoices: UserChoice[];
   survey: Survey;
   user: any; // Replace 'any' with the actual type of the 'user' property
+}
+
+interface QuestionRoomResultDto {
+  title: string;
+  type: string;
+  question: QuestionDto;
+  answer: string[][];
+}
+
+interface SurveyRoomResultDto {
+  questionRoomResultDto: QuestionRoomResultDto[];
 }
 
 const SurveyResultsPage = () => {
@@ -132,16 +141,40 @@ const SurveyResultsPage = () => {
       if (!isAuthenticated) {
         throw new Error('Token not found in localStorage');
       }
+      if (!survey) {
+        throw new Error('Survey not found');
+      }
+      const surveyResultsDto = filledSurveysToDto(surveyResults, survey);
+      console.log(surveyResultsDto);
       const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
       const headers = { Authorization: `Bearer ${tokenCookie}` };
       console.log('Request headers:', headers);
-      await axios.delete(`http://localhost:3000/surveys/${roomId}/close-room`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+      await axios.delete(`http://localhost:3000/surveys/${surveyId}/${roomId}/close-room`, { 
+        headers: { Authorization: `Bearer ${tokenCookie}` },
+        data: surveyResultsDto
+      });
       
     } catch (error) {
       console.error('Error deleting room:', error);
     }
   };
+  
 
+  const filledSurveysToDto = (filledSurveys: FilledSurvey[], survey: Survey): SurveyRoomResultDto => {
+    const questionRoomResults = survey.questions.map((question, index) => {
+      const answers = filledSurveys.map(filledSurvey => filledSurvey.userChoices[index].answer);
+      return {
+        title: question.title,
+        type: question.type,
+        question: question, 
+        answer: answers
+      } as QuestionRoomResultDto;
+    });
+  
+    return {
+      questionRoomResultDto: questionRoomResults 
+    } as SurveyRoomResultDto;
+  };
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
