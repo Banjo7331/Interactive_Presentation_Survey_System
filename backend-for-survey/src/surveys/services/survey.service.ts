@@ -8,6 +8,8 @@ import { User } from 'src/typeorm/entities/userElm/User';
 import { UserService } from 'src/users/services/user.service';
 import { CreatedFilledSurveyDto } from '../dtos/CreateFilledSurvey.dto';
 import { FilledSurvey, UserChoice } from 'src/typeorm/entities/userElm/UserResponseForSurvey';
+import { SurveyRoomResult } from 'src/typeorm/entities/surveyElm/SurveyRoomResult';
+import { QuestionRoomResult } from 'src/typeorm/entities/surveyElm/QuestionRoomResult';
 
 @Injectable()
 export class SurveyService {
@@ -16,10 +18,12 @@ export class SurveyService {
     private readonly surveyRepository: Repository<Survey>,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
-    //@InjectRepository(FilledSurvey)
-    //private readonly filledSurveyRepository: Repository<FilledSurvey>,
-    //@InjectRepository(UserChoice)
-    //private readonly userChoiceRepository: Repository<UserChoice>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(SurveyRoomResult)
+    private readonly surveyRoomResultRepository: Repository<SurveyRoomResult>,
+    @InjectRepository(QuestionRoomResult)
+    private readonly questionRoomResultRepository: Repository<QuestionRoomResult>,
     @Inject('USER_SERVICE') private readonly userService:UserService,
   ) {}
     
@@ -62,7 +66,12 @@ export class SurveyService {
     if (!survey) {
       throw new NotFoundException('Survey not found');
     }
+    const surveyRoomResults = await this.surveyRoomResultRepository.find({ where: { survey: { id: surveyId } } });
 
+    for (const surveyRoomResult of surveyRoomResults) {
+      await this.questionRoomResultRepository.remove(surveyRoomResult.questionRoomResult);
+      await this.surveyRoomResultRepository.remove(surveyRoomResult);
+    }
     // Delete the associated questions
     await this.questionRepository.remove(survey.questions);
 
@@ -107,4 +116,22 @@ export class SurveyService {
     
     return createdFilledSurvey;
   }
+  async getSurveys(userId: number): Promise<Survey[]> {
+    // Check if the user exists
+    const user = await this.userRepository.findOneBy({id: userId});
+  
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    // Get the surveys for the user
+    const surveys = await this.surveyRepository.find({ 
+      where: { user: { id: userId } },
+      relations: ['questions']
+    });
+  
+    return surveys;
+  }
+  
+  
 }

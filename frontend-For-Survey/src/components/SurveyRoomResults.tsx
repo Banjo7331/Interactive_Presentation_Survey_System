@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import io, { Socket } from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import ReactApexChart from 'react-apexcharts';
@@ -50,6 +50,12 @@ const SurveyResultsPage = () => {
   const [ws, setWS] = React.useState<Socket | null>(null)
   const wsRef = React.useRef<Socket | null>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
+
+  const [submittedUserCount, setSubmittedUserCount] = useState(0);
+  const [joinedCount, setJoinedCount] = useState(-1);
+
+
+  const navigate = useNavigate()
   
   const { isAuthenticated } = useAuth();
   useEffect(() => {
@@ -84,13 +90,18 @@ const SurveyResultsPage = () => {
       socket.on('disconnect', () => {
         console.log('Disconnected from WebSocket server');
       });
-
+      socket.on('userJoined', async () => {
+        // Update joined count when a new user joins the room
+        console.log("aha");
+        setJoinedCount(prevCount => prevCount + 1); // Add this line
+      });
       socket.on('surveySubmitted', async (submittedData) => {
         // Update survey results when a new survey is submitted
         console.log("gites")
         setSurveyResults(prevSurveyResults => [...prevSurveyResults, submittedData])
         const aggregatedData = aggregateData(surveyResults);
         setData(aggregatedData);
+        setSubmittedUserCount(prevCount => prevCount + 1);
       });
       wsRef.current = socket;
     }
@@ -153,6 +164,7 @@ const SurveyResultsPage = () => {
         headers: { Authorization: `Bearer ${tokenCookie}` },
         data: surveyResultsDto
       });
+      navigate('/menu');
       
     } catch (error) {
       console.error('Error deleting room:', error);
@@ -180,8 +192,15 @@ const SurveyResultsPage = () => {
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <button onClick={deleteRoom}>Close Room</button>
         <p>http://localhost:5173/survey-room/{surveyId}/{roomId}</p>
+        <p>{submittedUserCount}/{joinedCount}</p> {/* Modify this line */}
       </div>
       {charts}
+      <div className="card" style={{ position: 'absolute', top: 0, right: 0, width: '18rem' }}>
+        <div className="card-body">
+          <h5 className="card-title">Survey Count</h5>
+          <p className="card-text">{submittedUserCount}/{joinedCount}</p>
+        </div>
+      </div>
     </div>
   );
 };

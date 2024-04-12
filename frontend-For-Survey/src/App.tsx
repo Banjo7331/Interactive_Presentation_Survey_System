@@ -11,6 +11,7 @@ import SurveyRoom from './components/SurveyRoom'
 import SurveyResultsPage from './components/SurveyRoomResults'
 import VerifyEmailPage from './components/VerifyEmail'
 import WaitingForVerificationPage from './components/WaitingForVerification'
+import UserProfile from './components/UserProfile'
 
 function App() {
   const { isAuthenticated, login } = useAuth();
@@ -26,17 +27,18 @@ function App() {
   
   
   return(
-    <BrowserRouter>
-    <Routes>
-      <Route path='/' element={<Login></Login>}></Route>
-      <Route path='/signup/' element={<Signup></Signup>}></Route>
-      <Route path='/menu/*' element={<Menu></Menu>}></Route>
-      <Route path="/survey-room/:surveyId/:roomId" element={<SurveyRoom />} />
-      <Route path="/survey-results/:surveyId/:roomId" element={<SurveyResultsPage/>} />
-      <Route path="/verify-email" element={<VerifyEmailPage/>} />
-      <Route path="/waiting/:email" element={<WaitingForVerificationPage />} />
-    </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Login></Login>}></Route>
+        <Route path='/signup/' element={<Signup></Signup>}></Route>
+        <Route path='/menu/*' element={<Menu></Menu>}></Route>
+        <Route path="/survey-room/:surveyId/:roomId" element={<SurveyRoom />} />
+        <Route path="/survey-results/:surveyId/:roomId" element={<SurveyResultsPage/>} />
+        <Route path="/verify-email" element={<VerifyEmailPage/>} />
+        <Route path="/waiting/:email" element={<WaitingForVerificationPage />} />
+        <Route path="/profile/:userNickName" element={<UserProfile />} />
+      </Routes>
+      </BrowserRouter>
   )
 }
 

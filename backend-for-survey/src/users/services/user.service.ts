@@ -6,6 +6,7 @@ import { CreateUserDto } from "../dtos/CreateUser.dto";
 import * as bcrypt from 'bcrypt'
 import { CreateSurveyDto } from "src/surveys/dtos/CreateSurvey.dto";
 import { Survey } from "src/typeorm/entities/surveyElm/Survey";
+import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
 @Injectable()
 export class UserService {
   constructor(
@@ -73,5 +74,6 @@ export class UserService {
   
     return user.isVerified;
   }
-}
 
+  
+}

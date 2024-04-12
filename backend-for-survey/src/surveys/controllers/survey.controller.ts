@@ -41,9 +41,13 @@ export class SurveyController {
     return survey;
   }
   
-  @Delete(':id')
+  @Delete('survey/:id')
   async deleteSurvey(@Param('id',ParseIntPipe) surveyId:number) {
     await this.surveyService.deleteSurvey(surveyId);
+  }
+  @Delete('surveyRoomResult/:id')
+  async deleteSurveyRoomResult(@Param('id',ParseIntPipe) roomId:number) {
+    await this.roomService.deleteSurveyRoomResult(roomId);
   }
   
   @UseGuards(JwtAuthGuard)
@@ -85,7 +89,7 @@ export class SurveyController {
   }
   @UseGuards(JwtAuthGuard)
   @Post(':id/join')
-  joinRoom(@Param('id') roomId: string, @Request() req: any) {
+  async joinRoom(@Param('id') roomId: string, @Request() req: any) {
   try {
     const participantId = req.user.id; // Get the participant's ID from the request
 
@@ -95,11 +99,15 @@ export class SurveyController {
     if (!room) {
       throw new NotFoundException(`Room with ID ${roomId} not found`);
     }
+    if (room.participants.has(participantId)) {
+      return { message: 'You have already joined this room' };
+    }
     // Check if the participant has already submitted their survey
     if (room.submissions.has(participantId)) {
       throw new HttpException('You have already submitted your survey and cannot rejoin the room', HttpStatus.FORBIDDEN);
     }
     this.roomService.joinRoom(roomId, participantId);
+    this.surveyGateway.server.emit('userJoined');
     return { message: 'Joined room successfully' };
   } catch (error) {
     if (error instanceof HttpException) {
@@ -108,5 +116,17 @@ export class SurveyController {
       throw new InternalServerErrorException('Error joining room');
     }
   }
-}
+  }
+    @UseGuards(JwtAuthGuard)
+    @Get('user/surveys')
+    async getSurveys(@Request() req: any) {
+        const userId = req.user.id;
+        return this.surveyService.getSurveys(userId);
+    }
+    @UseGuards(JwtAuthGuard)
+    @Get('user/survey-results')
+    async getSurveyResults(@Request() req: any) {
+        const userId = req.user.id;
+        return this.roomService.getSurveyResults(userId);
+    }
 }

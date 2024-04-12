@@ -8,6 +8,7 @@ import { Survey } from "src/typeorm/entities/surveyElm/Survey";
 import { Repository } from "typeorm";
 import { QuestionRoomResult } from "src/typeorm/entities/surveyElm/QuestionRoomResult";
 import { CreateQuestionDto } from "../dtos/CreateQuestion.dto";
+import { User } from "src/typeorm/entities/userElm/User";
 @Injectable()
 export class SurveyRoomService {
   private readonly rooms: Map<string, SurveyRoom>;
@@ -19,6 +20,8 @@ export class SurveyRoomService {
     private readonly surveyRoomResultRepository: Repository<SurveyRoomResult>,
     @InjectRepository(QuestionRoomResult)
     private readonly questionRoomResultRepository: Repository<QuestionRoomResult>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {
     this.rooms = new Map();
     
@@ -54,6 +57,21 @@ export class SurveyRoomService {
     }
     this.submitSurveyRoomResults(roomId,surveyId, surveyRoomResultDto);
     this.rooms.delete(roomId);
+  }
+  async deleteSurveyRoomResult(roomId: number): Promise<void> {
+    const id = roomId;
+    const surveyRoomResults = await this.surveyRoomResultRepository.findOne({ where: { id },  relations: ['questionRoomResult'] });
+
+    // If the survey doesn't exist, throw an error or handle accordingly
+    if (!surveyRoomResults) {
+      throw new NotFoundException('Survey not found');
+    }
+
+    // Delete the associated questions
+    await this.questionRoomResultRepository.remove(surveyRoomResults.questionRoomResult);
+
+    // Delete the survey
+    await this.surveyRoomResultRepository.delete(roomId);
   }
   async submitSurveyRoomResults(roomId: string, surveyId:number, surveyRoomResultDto : CreateSurveyRoomResultDto){
     const survey = await this.surveyRepository.findOne({ where: { id: surveyId }, relations: ['questions'] });
@@ -119,5 +137,20 @@ export class SurveyRoomService {
     }
     room.participants.add(participantId);
   }
-  // Add methods for managing participants, such as joining and leaving the room
+  async getSurveyResults(userId: number): Promise<SurveyRoomResult[]> {
+    // Check if the user exists
+    const user = await this.userRepository.findOneBy({id: userId});
+  
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    // Get the survey results for the user
+    const surveyResults = await this.surveyRoomResultRepository.find({ 
+      where: { user: { id: userId } },
+      relations: ['questionRoomResult']
+    });
+  
+    return surveyResults;
+  }
 }

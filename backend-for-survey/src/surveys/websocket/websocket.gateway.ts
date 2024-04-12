@@ -8,8 +8,10 @@ export class SurveyWebSocketGateway implements OnGatewayConnection, OnGatewayDis
   @WebSocketServer()
   server: Server;
 
+  @SubscribeMessage('joiningUser')
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
+    this.server.emit('userJoined'); // Emit 'userJoined' event when a new connection is established
   }
 
   handleDisconnect(client: Socket) {

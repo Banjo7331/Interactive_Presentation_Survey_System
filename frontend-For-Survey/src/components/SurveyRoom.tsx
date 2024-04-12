@@ -38,6 +38,8 @@ const SurveyRoom = () => {
 
     const [errorMessage, setErrorMessage] = useState('');
 
+    const [redirectToMenu, setRedirectToMenu] = useState(false);
+
     const { isAuthenticated } = useAuth();
     
     const navigate = useNavigate();
@@ -63,12 +65,16 @@ const SurveyRoom = () => {
 
     useEffect(() => {
       const joinRoom = async () => {
+        
         const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+        if (!tokenCookie) {
+          throw new Error('Token not found in cookies');
+        }
         const headers = { Authorization: `Bearer ${tokenCookie}` };
   
         // Join the room
         try {
-          // Join the room
+          console.log('Joining room with ID:', roomId);
           await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers: { Authorization: `Bearer ${tokenCookie}` } });
         } catch (error: any) {
           if (error.response && error.response.status === 404) {
@@ -119,9 +125,14 @@ const SurveyRoom = () => {
             setSubmissionStatus('submitted');
           } catch (error) {
             console.error('Błąd podczas przesyłania wypełnionej ankiety:', error);
-            if ((error as any).response && (error as any).response.status === 403) {
-              setErrorMessage('You have already submitted this survey');
+            if ((error as any).response) {
+              if ((error as any).response.status === 403) {
+                setErrorMessage('You have already submitted this survey');
+              } else if ((error as any).response.status === 404) {
+                setErrorMessage('The room does not exist or has been closed');
+              }
             }
+            setRedirectToMenu(true);
         }
     };
   
@@ -165,7 +176,16 @@ const SurveyRoom = () => {
               ))}
             </ul>
             <button onClick={handleSubmit}>Wyślij</button>
-            {errorMessage && <p>{errorMessage}</p>}
+            {errorMessage && 
+              <div className="alert alert-danger" role="alert">
+                {errorMessage}
+              </div>
+            }
+            {redirectToMenu && 
+              <button className="btn btn-primary" onClick={() => window.location.href = '/menu'}>
+                Go to Menu
+              </button>
+            }
           </>
         )
       )}
