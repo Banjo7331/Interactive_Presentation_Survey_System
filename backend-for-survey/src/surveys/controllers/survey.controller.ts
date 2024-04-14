@@ -34,11 +34,19 @@ export class SurveyController {
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getSurvey(@Param('id',ParseIntPipe) surveyId:number,@Request() req) {
+  getUsersSurvey(@Param('id',ParseIntPipe) surveyId:number,@Request() req) {
     const user = req.user;
     console.log(user);
     const survey = this.surveyService.getSurveyById(surveyId);
     return survey;
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('search/:name')
+  async getSurveysByName(@Param('name') name: string, @Request() req) {
+    const user = req.user;
+    console.log(user);
+    const surveys = await this.surveyService.getSurveysByName(name, user.id);
+    return surveys;
   }
   
   @Delete('survey/:id')

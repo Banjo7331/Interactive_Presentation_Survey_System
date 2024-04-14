@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from 'src/typeorm/entities/surveyElm/Question';
 import { Survey } from 'src/typeorm/entities/surveyElm/Survey';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateSurveyDto } from '../dtos/CreateSurvey.dto';
 import { User } from 'src/typeorm/entities/userElm/User';
 import { UserService } from 'src/users/services/user.service';
@@ -57,6 +57,16 @@ export class SurveyService {
     const id = surveyId;
     const survey = await this.surveyRepository.findOne({ where: { id },  relations: ['questions'] });
     return survey;
+  }
+  async getSurveysByName(name: string, userId: number): Promise<Survey[]> {
+    const surveys = await this.surveyRepository.find({ 
+      where: { 
+        title: Like(`${name}%`), 
+        user: { id: userId }
+      }, 
+      relations: ['questions', 'user'] 
+    });
+    return surveys;
   }
   async deleteSurvey(surveyId: number): Promise<void> {
     const id = surveyId;

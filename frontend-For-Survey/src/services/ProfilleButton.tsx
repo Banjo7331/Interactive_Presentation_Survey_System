@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function ProfileButton({ nickname }: { nickname: string }) {
   const [show, setShow] = useState(false);
+  const navigate = useNavigate()
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  
+  const handleLogout = () => {
+    // Remove the token from cookies
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    // Redirect the user to the login page
+    navigate('/');
+  };
 
   return (
     <>
@@ -22,6 +30,7 @@ function ProfileButton({ nickname }: { nickname: string }) {
             </div>
             <div className="modal-body">
                 <Link to={`/profile/${nickname}`} className="btn btn-primary">Go to Profile</Link>
+                <button onClick={handleLogout} className="btn btn-danger">Logout</button>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={handleClose}>

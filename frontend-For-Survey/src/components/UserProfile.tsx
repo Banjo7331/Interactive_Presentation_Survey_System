@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios'; // Assuming you're using axios for HTTP requests
 import { useAuth } from '../utils/IsLogged';
+import ConfirmationWindow from '../services/ConfirmationWindow';
 // Interfaces
 interface QuestionDto {
   id: number;
@@ -37,6 +38,12 @@ interface SurveyRoomResultDto {
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
   const [selectedResult, setSelectedResult] = useState<SurveyRoomResultDto | null>(null);
 
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<'survey' | 'surveyRoomResult' | null>(null);
+
+  const navigate = useNavigate();
+  
   const { isAuthenticated } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
@@ -75,29 +82,59 @@ interface SurveyRoomResultDto {
 
     const handleDeleteSurvey = async (surveyId: string) => {
         try {
-            // Send a DELETE request to your API
-            await axios.delete(`http://localhost:3000/surveys/survey/${surveyId}`);
-
-            // Remove the deleted survey from the state
-            setSurveys(surveys.filter(survey => survey.id !== surveyId));
-            setSurveyResults(surveyResults.filter(surveyResult => surveyResult.surveyId !== surveyId));
+            setSelectedId(surveyId);
+            setSelectedType('survey');
+            setShowConfirmation(true);
         } catch (error) {
             console.error('Failed to delete survey:', error);
         }
     };
     const handleDeleteSurveyRoomResult = async (roomId: string) => {
         try {
-            // Send a DELETE request to your API
-            await axios.delete(`http://localhost:3000/surveys/surveyRoomResult/${roomId}`);
-
-            // Remove the deleted survey from the state
-            setSurveyResults(surveyResults.filter(surveyResult => surveyResult.id !== roomId));
+            setSelectedId(roomId);
+            setSelectedType('surveyRoomResult');
+            setShowConfirmation(true);
         } catch (error) {
             console.error('Failed to delete survey:', error);
         }
     };
+    const handleConfirmDelete = async () => {
+      if (selectedId) {
+        try {
+          if (selectedType === 'survey') {
+            await axios.delete(`http://localhost:3000/surveys/survey/${selectedId}`);
+            setSurveys(surveys.filter(survey => survey.id !== selectedId));
+            setSurveyResults(surveyResults.filter(surveyResult => surveyResult.surveyId !== selectedId));
+          } else if (selectedType === 'surveyRoomResult') {
+            await axios.delete(`http://localhost:3000/surveys/surveyRoomResult/${selectedId}`);
+            setSurveyResults(surveyResults.filter(surveyResult => surveyResult.id !== selectedId));
+          }
+        } catch (error) {
+          console.error('Failed to delete item:', error);
+        }
+      }
+      setSelectedType(null);
+      setShowConfirmation(false);
+    };
+    const handleCancelDelete = () => {
+      setSelectedType(null);
+      setShowConfirmation(false);
+    };
+    const handleGoBackMenuClick = () => {
+      if (isAuthenticated) {
+        navigate('/menu');
+      } else {
+        // Redirect to the login page
+        navigate('/');
+      }
+    };
   return (
-    <div className="row">
+    <>
+    <ConfirmationWindow show={showConfirmation} handleConfirm={handleConfirmDelete} handleCancel={handleCancelDelete} />
+    <div className="position-absolute top-0 start-0  p-2">
+      <button onClick={handleGoBackMenuClick} className="btn btn-primary">Menu</button>
+    </div>
+    <div className="row  mt-5">
       <div className="col">
         <h2>Surveys</h2>
         <table className="table">
@@ -154,6 +191,7 @@ interface SurveyRoomResultDto {
         </table>
       </div>
     </div>
+    </>
   );
 };
 
