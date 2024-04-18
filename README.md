@@ -16,16 +16,11 @@ Survey Management App is an application designed for creating surveys, managing 
 4. Monitor responses and analyze collected data.
 
 ## Technologies Used
-- Frontend: [List frontend technologies]
-- Backend: [List backend technologies]
-- Database: [List database technologies]
+- Frontend: React
+- Backend: NestJS
+- Database: Postgres
 
 ## Installation
-[Include installation instructions if applicable]
 
 ## Contribution
-[Include contribution guidelines if applicable]
-
-## License
-[Include license information if applicable]
 
