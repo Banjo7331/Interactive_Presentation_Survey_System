@@ -17,7 +17,7 @@ interface CreateSurveyDto {
 
 export default function CreateSurvey() {
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token} = useAuth();
   
   const [formData, setFormData] = useState<CreateSurveyDto>({
     title: '',
@@ -53,13 +53,13 @@ export default function CreateSurvey() {
       if (!isAuthenticated) {
         throw new Error('Token not found in localStorage');
       }
-      const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-      const headers = { Authorization: `Bearer ${tokenCookie}` };
+      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+      const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
       const response = await axios.post(
         'http://localhost:3000/surveys/create',
         formData,
-        { headers: { Authorization: `Bearer ${tokenCookie}` } }
+        { headers }
       );
       
       console.log('Survey created successfully:', response.data);

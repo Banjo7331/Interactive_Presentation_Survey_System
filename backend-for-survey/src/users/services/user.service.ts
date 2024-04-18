@@ -40,6 +40,10 @@ export class UserService {
   async updateUser(user: User): Promise<User> {
     return await this.userRepository.save(user);
   }
+  async updatePassword(id: number, newPassword: string): Promise<void> {
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    await this.userRepository.update(id, { password: hashedPassword });
+  }
   async findUserByUsername(username: string){
     return this.userRepository.findOne({ where: { username } });
   }

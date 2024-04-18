@@ -29,13 +29,10 @@ function ProfileButton({ nickname }: { nickname: string }) {
               <button type="button" className="btn-close" onClick={handleClose}></button>
             </div>
             <div className="modal-body">
-                <Link to={`/profile/${nickname}`} className="btn btn-primary">Go to Profile</Link>
+                <Link to={`/menu/profile/${nickname}`} className="btn btn-primary">Go to Profile</Link>
                 <button onClick={handleLogout} className="btn btn-danger">Logout</button>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={handleClose}>
-                Close
-              </button>
             </div>
           </div>
         </div>

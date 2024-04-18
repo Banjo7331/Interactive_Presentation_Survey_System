@@ -64,7 +64,8 @@ export class SurveyService {
         title: Like(`${name}%`), 
         user: { id: userId }
       }, 
-      relations: ['questions', 'user'] 
+      relations: ['questions', 'user'], 
+      take: 4
     });
     return surveys;
   }

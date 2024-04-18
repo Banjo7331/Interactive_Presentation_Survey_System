@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios'; // Assuming you're using axios for HTTP requests
 import { useAuth } from '../utils/IsLogged';
 import ConfirmationWindow from '../services/ConfirmationWindow';
+import ChangePasswordWindow from '../services/ChangePasswordWindow';
 // Interfaces
 interface QuestionDto {
   id: number;
@@ -38,28 +39,29 @@ interface SurveyRoomResultDto {
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
   const [selectedResult, setSelectedResult] = useState<SurveyRoomResultDto | null>(null);
 
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<'survey' | 'surveyRoomResult' | null>(null);
 
   const navigate = useNavigate();
   
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated,token } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
         try {
             if (!isAuthenticated) {
                 throw new Error('Token not found in localStorage');
             }
-            const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-            const headers = { Authorization: `Bearer ${tokenCookie}` };
+            //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+            const headers = { Authorization: `Bearer ${token}` };
             console.log('Request headers:', headers);
-            const response = await axios.get(`http://localhost:3000/surveys/user/surveys`,{ headers: { Authorization: `Bearer ${tokenCookie}` } })
+            const response = await axios.get(`http://localhost:3000/surveys/user/surveys`,{ headers })
             
             console.log(response);
             setSurveys(response.data)
             
-            const response2 = await axios.get(`http://localhost:3000/surveys/user/survey-results`,{ headers: { Authorization: `Bearer ${tokenCookie}` } })
+            const response2 = await axios.get(`http://localhost:3000/surveys/user/survey-results`,{ headers })
       
             console.log(response2);
             setSurveyResults(response2.data)
@@ -79,6 +81,13 @@ interface SurveyRoomResultDto {
   const handleResultClick = (result: SurveyRoomResultDto) =>{
     setSelectedResult(result);
   }
+  const handleOpenChangePasswordModal = () => {
+    setShowChangePasswordModal(true);
+  };
+
+  const handleCloseChangePasswordModal = () => {
+    setShowChangePasswordModal(false);
+  };
 
     const handleDeleteSurvey = async (surveyId: string) => {
         try {
@@ -101,12 +110,16 @@ interface SurveyRoomResultDto {
     const handleConfirmDelete = async () => {
       if (selectedId) {
         try {
+          if (!isAuthenticated) {
+            throw new Error('Token not found in localStorage');
+          }
+          const headers = { Authorization: `Bearer ${token}` };
           if (selectedType === 'survey') {
-            await axios.delete(`http://localhost:3000/surveys/survey/${selectedId}`);
+            await axios.delete(`http://localhost:3000/surveys/survey/${selectedId}`, { headers });
             setSurveys(surveys.filter(survey => survey.id !== selectedId));
             setSurveyResults(surveyResults.filter(surveyResult => surveyResult.surveyId !== selectedId));
           } else if (selectedType === 'surveyRoomResult') {
-            await axios.delete(`http://localhost:3000/surveys/surveyRoomResult/${selectedId}`);
+            await axios.delete(`http://localhost:3000/surveys/surveyRoomResult/${selectedId}`, { headers });
             setSurveyResults(surveyResults.filter(surveyResult => surveyResult.id !== selectedId));
           }
         } catch (error) {
@@ -131,8 +144,14 @@ interface SurveyRoomResultDto {
   return (
     <>
     <ConfirmationWindow show={showConfirmation} handleConfirm={handleConfirmDelete} handleCancel={handleCancelDelete} />
-    <div className="position-absolute top-0 start-0  p-2">
+    
+    <ChangePasswordWindow
+      show={showChangePasswordModal}
+      handleClose={handleCloseChangePasswordModal}
+    />
+    <div className="d-flex justify-content-between p-2">
       <button onClick={handleGoBackMenuClick} className="btn btn-primary">Menu</button>
+      <button onClick={handleOpenChangePasswordModal} className="btn btn-primary">Change Password</button>
     </div>
     <div className="row  mt-5">
       <div className="col">

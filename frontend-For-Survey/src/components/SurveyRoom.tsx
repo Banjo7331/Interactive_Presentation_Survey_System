@@ -40,7 +40,7 @@ const SurveyRoom = () => {
 
     const [redirectToMenu, setRedirectToMenu] = useState(false);
 
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, token} = useAuth();
     
     const navigate = useNavigate();
     useEffect(() => {
@@ -50,10 +50,10 @@ const SurveyRoom = () => {
           if (!isAuthenticated) {
             throw new Error('Token not found in localStorage');
           }
-          const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-          const headers = { Authorization: `Bearer ${tokenCookie}` };
+          //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+          const headers = { Authorization: `Bearer ${token}` };
           console.log('Request headers:', headers);
-          const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+          const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers });
           setSurvey(response.data);
         } catch (error) {
           console.error('Error fetching survey:', error);

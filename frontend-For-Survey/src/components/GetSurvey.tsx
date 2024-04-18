@@ -27,15 +27,15 @@ export default function GetSurvey() {
   const [surveyName, setSurveyName] = useState('');
   const [surveyNameInput, setSurveyNameInput] = useState('');
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   useEffect(() => {
     const fetchSurveys = async () => {
       try {
         if (!isAuthenticated) {
-          throw new Error('Token not found in localStorage');
+          throw new Error('Token not found');
         }
-        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
-        const headers = { Authorization: `Bearer ${tokenCookie}` };
+        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
+        const headers = { Authorization: `Bearer ${token}` };
         console.log('Request headers:', headers);
         
         if (surveyNameInput) { // Add this line
@@ -59,27 +59,6 @@ export default function GetSurvey() {
     fetchSurveys();
   }, [surveyName]);
 
-  /*useEffect(() => {
-    const fetchSurvey = async () => {
-      if (!surveyId) return; // Nie pobieraj, jeśli nie ma ID ankiety
-      try {
-        if (!isAuthenticated) {
-          throw new Error('Token not found in localStorage');
-        }
-        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-        const headers = { Authorization: `Bearer ${tokenCookie}` };
-        console.log('Request headers:', headers);
-        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
-        console.log(response);
-        setSurvey(response.data);
-      } catch (error) {
-        console.error('Error fetching survey:', error);
-      }
-    };
-
-    fetchSurvey();
-  }, [surveyId]);*/
-  
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSurveyNameInput(e.target.value);
   };
@@ -119,11 +98,11 @@ export default function GetSurvey() {
         throw new Error('Token not found in localStorage');
       }
       console.log('Survey ID:', surveyId);
-      const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-      console.log('Token:', tokenCookie)
-      const headers = { Authorization: `Bearer ${tokenCookie}` };
+      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+      // console.log('Token:', tokenCookie)
+      const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
-      const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/create-room`,{},{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+      const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/create-room`,{},{ headers });
       const roomId2 = response.data.id;
       setRoomId(response.data);
       console.log('Survey room created from usestate:', roomId);
@@ -156,7 +135,7 @@ export default function GetSurvey() {
         <button type="submit">Search surveys</button>
       </form>
       {error && <div className="alert alert-danger">{error}</div>}
-      {surveys && surveys.slice(0, 4).map((survey, index) => (
+      {surveys && surveys.map((survey, index) => (
         <div key={index}>
           <h2 onClick={() => handleSurveyClick(survey.id, survey.title)}>{survey.title}</h2>
         </div>

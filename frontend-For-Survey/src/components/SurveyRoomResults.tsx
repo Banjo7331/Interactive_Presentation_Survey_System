@@ -6,6 +6,7 @@ import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import { aggregateData } from '../utils/agregateData';
 import { useAuth } from '../utils/IsLogged';
+import QRCode from 'qrcode.react';
 
 
 interface UserChoice {
@@ -57,7 +58,7 @@ const SurveyResultsPage = () => {
 
   const navigate = useNavigate()
   
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   useEffect(() => {
     // Establish WebSocket connection
     const fetchSurvey = async () => {
@@ -66,10 +67,10 @@ const SurveyResultsPage = () => {
         if (!isAuthenticated) {
           throw new Error('Token not found in localStorage');
         }
-        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-        const headers = { Authorization: `Bearer ${tokenCookie}` };
+        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+        const headers = { Authorization: `Bearer ${token}` };
         console.log('Request headers:', headers);
-        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+        const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers });
         setSurvey(response.data);
       } catch (error) {
         console.error('Error fetching survey:', error);
@@ -109,9 +110,12 @@ const SurveyResultsPage = () => {
       if (wsRef.current) {
         wsRef.current.disconnect();
         wsRef.current = null; // Reset the ref after disconnecting
+        console.log("ojejejejejejej")
       }
+      
     };
   }, []);
+
   const charts = survey?.questions.map((question, index) => {
     // Initialize an object to store the count of each choice
     const choiceCounts = question.possibleChoices.reduce((counts, choice) => {
@@ -157,11 +161,11 @@ const SurveyResultsPage = () => {
       }
       const surveyResultsDto = filledSurveysToDto(surveyResults, survey);
       console.log(surveyResultsDto);
-      const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-      const headers = { Authorization: `Bearer ${tokenCookie}` };
+      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+      const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
       await axios.delete(`http://localhost:3000/surveys/${surveyId}/${roomId}/close-room`, { 
-        headers: { Authorization: `Bearer ${tokenCookie}` },
+        headers,
         data: surveyResultsDto
       });
       navigate('/menu');
@@ -191,8 +195,10 @@ const SurveyResultsPage = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <button onClick={deleteRoom}>Close Room</button>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
         <p>http://localhost:5173/survey-room/{surveyId}/{roomId}</p>
-        <p>{submittedUserCount}/{joinedCount}</p> {/* Modify this line */}
+        <QRCode value={`http://localhost:5173/survey-room/${surveyId}/${roomId}`} />
       </div>
       {charts}
       <div className="card" style={{ position: 'absolute', top: 0, right: 0, width: '18rem' }}>

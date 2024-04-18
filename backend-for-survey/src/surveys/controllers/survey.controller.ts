@@ -49,10 +49,12 @@ export class SurveyController {
     return surveys;
   }
   
+  @UseGuards(JwtAuthGuard)
   @Delete('survey/:id')
   async deleteSurvey(@Param('id',ParseIntPipe) surveyId:number) {
     await this.surveyService.deleteSurvey(surveyId);
   }
+  @UseGuards(JwtAuthGuard)
   @Delete('surveyRoomResult/:id')
   async deleteSurveyRoomResult(@Param('id',ParseIntPipe) roomId:number) {
     await this.roomService.deleteSurveyRoomResult(roomId);

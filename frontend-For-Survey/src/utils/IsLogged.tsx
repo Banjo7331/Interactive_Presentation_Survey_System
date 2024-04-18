@@ -5,8 +5,8 @@ export const useAuth = () => {
     // Check if token exists in local storage
    // const token = localStorage.getItem('token');
     const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
-    return /*!!token ||*/ !!tokenCookie;
-});
+    return !!tokenCookie;
+  });
 
   const login = (token: string) => {
     const expiryDate = new Date();
@@ -16,9 +16,13 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    setIsAuthenticated(false);
+      document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      setIsAuthenticated(false);
   };
+  const token = (() => {
+    const tokenCookie = document.cookie.split(";").find((cookie) => cookie.trim().startsWith("token="))?.split("=")[1];
+    return tokenCookie;
+  })();
 
-  return { isAuthenticated, login, logout };
+  return { isAuthenticated, login, logout, token };
 };

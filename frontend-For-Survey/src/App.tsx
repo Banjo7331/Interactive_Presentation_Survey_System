@@ -36,7 +36,7 @@ function App() {
         <Route path="/survey-results/:surveyId/:roomId" element={<SurveyResultsPage/>} />
         <Route path="/verify-email" element={<VerifyEmailPage/>} />
         <Route path="/waiting/:email" element={<WaitingForVerificationPage />} />
-        <Route path="/profile/:userNickName" element={<UserProfile />} />
+        
       </Routes>
       </BrowserRouter>
   )
