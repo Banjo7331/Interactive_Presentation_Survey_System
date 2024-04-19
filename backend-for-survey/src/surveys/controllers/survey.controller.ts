@@ -30,6 +30,7 @@ export class SurveyController {
     createSurveyData.user = user;
     const createdSurvey = this.surveyService.createSurvey(createSurveyData);
     this.surveyGateway.handleSurveyCreation(null,createdSurvey);
+    await this.surveyGateway.server.emit('surveyCreation', createdSurvey);
     return createdSurvey;
   }
   @UseGuards(JwtAuthGuard)
@@ -85,9 +86,16 @@ export class SurveyController {
   }
   @UseGuards(JwtAuthGuard)
   @Post(':id/create-room')
-  createRoom(@Param('id') surveyId: string, @Body() surveyData: any,@Request() req) {
+  async createRoom(@Param('id') surveyId: string, @Body() surveyData: any,@Request() req) {
     const userId = req.user.id;
-    return this.roomService.createRoom(surveyId, surveyData, userId);
+    const roomId = await this.roomService.createRoom(surveyId, surveyData, userId);
+    this.surveyGateway.server.emit('roomCreation', { roomId, userId });
+    return { roomId, userId };
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('get-room/:id')
+  async getRoom(@Param('id') roomId: string) {
+    return this.roomService.getRoomById(roomId);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':surveyId/:roomId/close-room')

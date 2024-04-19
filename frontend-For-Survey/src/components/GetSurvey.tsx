@@ -103,14 +103,16 @@ export default function GetSurvey() {
       const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
       const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/create-room`,{},{ headers });
-      const roomId2 = response.data.id;
+      console.log("trolololo"+response.data)
+      const roomId2 = response.data.roomId;
+      const userId = response.data.userId;
       setRoomId(response.data);
       console.log('Survey room created from usestate:', roomId);
       console.log('Survey room created:', response.data);
       console.log('Room ID:', roomId2);
       console.log('Room ID in useState:', roomId);
       setRoomCreated(true);
-      navigate(`/survey-results/${surveyId}/${roomId2}`); // Use both surveyId and roomId in the URL
+      navigate(`/survey-results/${userId}/${surveyId}/${roomId2}`); // Use both surveyId and roomId in the URL
     } catch (error) {
       console.error('Error creating survey room:', error);
     }

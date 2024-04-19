@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { SurveyRoom } from "../websocket/surveyRoom";
 import { v4 as uuidv4 } from 'uuid';
 import { CreateSurveyRoomResultDto } from "../dtos/CreateSurveyRoomResult.dto";
@@ -9,6 +9,7 @@ import { Repository } from "typeorm";
 import { QuestionRoomResult } from "src/typeorm/entities/surveyElm/QuestionRoomResult";
 import { CreateQuestionDto } from "../dtos/CreateQuestion.dto";
 import { User } from "src/typeorm/entities/userElm/User";
+import { SurveyWebSocketGateway } from "../websocket/websocket.gateway";
 @Injectable()
 export class SurveyRoomService {
   private readonly rooms: Map<string, SurveyRoom>;
@@ -40,13 +41,18 @@ export class SurveyRoomService {
       creatorId: creatorId,
     };
     this.rooms.set(roomId, room);
-    return room;
+
+    return roomId;
   }
 
   getRoomById(roomId: string): SurveyRoom {
+    console.log(" problemiskoooooooo");
+    const room = this.rooms.get(roomId);
+    console.log(room);
     return this.rooms.get(roomId);
   }
   closeRoom(roomId: string, userId: string, surveyRoomResultDto : CreateSurveyRoomResultDto, surveyId: number) {
+    console.log("in close room method");
     console.log(this.rooms);
     const room = this.rooms.get(roomId);
     if (!room) {
