@@ -13,6 +13,7 @@ export default function Signup() {
       const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
       };
+      const [errorMessage, setErrorMessage] = useState('');
     
       const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -21,7 +22,11 @@ export default function Signup() {
             console.log(values.email);
             navigate(`/waiting/${values.email}`);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            if (err.response) {
+                setErrorMessage(err.response.data.message);
+            }
+        });
       };
     return (
         <div className='d-flex justify-content-center align-items-center bg-primary vh-100'>
@@ -47,6 +52,7 @@ export default function Signup() {
                     <p>You are agree to terms and policies</p>
                     <Link to="/"className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none'>Login</Link>
                 </form>
+                {errorMessage && <p>{errorMessage}</p>}
             </div>
         </div>
   )

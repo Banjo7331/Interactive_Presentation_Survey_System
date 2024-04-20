@@ -141,38 +141,55 @@ const SurveyResultsPage = () => {
   }, [isAuthenticated, roomId, token]);
 
   const charts = survey?.questions.map((question, index) => {
-    // Initialize an object to store the count of each choice
-    const choiceCounts = question.possibleChoices.reduce((counts, choice) => {
-      counts[choice] = 0;
-      return counts;
-    }, {} as Record<string, number>);
-
-    // Count the number of times each choice was selected
-    surveyResults.forEach(surveyResult => {
-      const answer = surveyResult.userChoices[index].answer;
-      if (answer.length > 0 && answer[0] in choiceCounts) {
-        choiceCounts[answer[0]]++;
-      }
-    });
-
-    const options = {
-      chart: {
-        type: 'bar' as const,
-      },
-      series: [{
-        data: Object.entries(choiceCounts).map(([choice, count]) => ({ x: choice, y: count }))
-      }],
-      xaxis: {
-        type: 'category' as const,
-      }
-    };
-
-    return (
-      <div key={index}>
-        <h3>{question.title}</h3>
-        <ReactApexChart options={options} series={options.series} type="bar" />
-      </div>
-    );
+    if (question.type === 'text-answer') {
+      // For text questions, just display the answers
+      const textAnswers = surveyResults.map(surveyResult => surveyResult.userChoices[index].answer);
+      return (
+        <div key={index}>
+          <h3>{question.title}</h3>
+          {textAnswers.map((answer, i) => <p key={i}>{answer}</p>)}
+        </div>
+      );
+    } else {
+      // For multiple choice and one choice questions, display a chart
+      const choiceCounts = question.possibleChoices.reduce((counts, choice) => {
+        counts[choice] = 0;
+        return counts;
+      }, {} as Record<string, number>);
+  
+      // Count the number of times each choice was selected
+      surveyResults.forEach(surveyResult => {
+        const answer = surveyResult.userChoices[index].answer;
+        if (Array.isArray(answer)) {
+          answer.forEach(choice => {
+            if (choice in choiceCounts) {
+              choiceCounts[choice]++;
+            }
+          });
+        } else if (answer in choiceCounts) {
+          choiceCounts[answer]++;
+        }
+      });
+  
+      const options = {
+        chart: {
+          type: 'bar' as const,
+        },
+        series: [{
+          data: Object.entries(choiceCounts).map(([choice, count]) => ({ x: choice, y: count }))
+        }],
+        xaxis: {
+          type: 'category' as const,
+        }
+      };
+  
+      return (
+        <div key={index}>
+          <h3>{question.title}</h3>
+          <ReactApexChart options={options} series={options.series} type="bar" />
+        </div>
+      );
+    }
   }) || null; // Render nothing if survey is null
 
   const deleteRoom = async () => {

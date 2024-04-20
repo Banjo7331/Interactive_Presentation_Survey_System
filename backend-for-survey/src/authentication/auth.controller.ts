@@ -30,6 +30,7 @@ export class AuthController{
     @Post('register')
     async registerUser(@Body() createUserDto: CreateUserDto){
       // Generate a verification token with the user's information encoded in it
+      await this.authService.checkUserExists(createUserDto.username, createUserDto.email);
       const token = await this.authService.generateVerificationToken(createUserDto);
       return await this.authService.sendVerificationEmail(createUserDto.email, token);
     }
@@ -46,7 +47,6 @@ export class AuthController{
           // If the token is valid, create the user and save them to the database
           console.log('a')
           return await this.userService.registerUser(createUserDto);
-          console.log('b')
         }
       } catch (error) {
         throw new BadRequestException('Invalid verification token.');

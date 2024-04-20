@@ -19,18 +19,16 @@ export class SurveyController {
     private readonly surveyGateway: SurveyWebSocketGateway,
     private readonly roomService: SurveyRoomService,
   ) {}
+
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new ValidationPipe(),
-    new QuestionTypeValidationPipe(),
-  )
   @Post('create')
   async createSurvey(@Request() req,@Body() createSurveyData: CreateSurveyDto ): Promise<Survey> { 
     const user = req.user;
     console.log(user);
     createSurveyData.user = user;
-    const createdSurvey = this.surveyService.createSurvey(createSurveyData);
-    this.surveyGateway.handleSurveyCreation(null,createdSurvey);
+    const createdSurvey = await this.surveyService.createSurvey(createSurveyData);
     await this.surveyGateway.server.emit('surveyCreation', createdSurvey);
+
     return createdSurvey;
   }
   @UseGuards(JwtAuthGuard)

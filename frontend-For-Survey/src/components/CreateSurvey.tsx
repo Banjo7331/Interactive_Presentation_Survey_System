@@ -18,7 +18,7 @@ interface CreateSurveyDto {
 export default function CreateSurvey() {
 
   const { isAuthenticated, token} = useAuth();
-  
+  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState<CreateSurveyDto>({
     title: '',
     createQuestionDtos: [],
@@ -60,13 +60,19 @@ export default function CreateSurvey() {
         'http://localhost:3000/surveys/create',
         formData,
         { headers }
-      );
+      ).then(res =>{ 
+          console.log('Survey created successfully:', res.data);
+          console.log(formData)
+          navigate('/menu');
+      })
+      .catch(err => {
+          if (err.response) {
+              setErrorMessage(err.response.data.message);
+          }
+      });;
       
-      console.log('Survey created successfully:', response.data);
-
-      navigate('/menu');
-    } catch (error) {
-      console.error('Error creating survey:', error);
+    } catch (err) {
+      console.error('Error creating survey:', err);
     }
   };
   const handleAddChoice = (index: number) => {
@@ -83,6 +89,7 @@ export default function CreateSurvey() {
   return (
     <div>
       <h1>Witaj w kreatorze ankiety</h1>
+      {errorMessage && <p>{errorMessage}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="title" className="form-label">Tytuł ankiety</label>

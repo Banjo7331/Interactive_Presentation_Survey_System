@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../utils/IsLogged';
+import { roomExists } from '../utils/roomExists';
+import RoomErrorPage from '../services/RoomErrorPage';
 
 interface Survey {
     id: number;
@@ -26,15 +28,20 @@ interface SubmitSurveyDto {
     questionId: number; // ID of the question
     answer: string[]; // Array of answers chosen by the user (for multiple-choice questions)
   }
-
+  enum QuestionType {
+    MULTIPLE_CHOICE = 'multiple-correct-answer',
+    ONE_CHOICE = 'single-correct-answer',
+    TEXT = 'text-answer',
+  }
 const SurveyRoom = () => {
     const { surveyId, roomId } = useParams();
     const intSurveyId = parseInt(surveyId!);
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [filledSurvey, setFilledSurvey] = useState<SubmitSurveyDto | null>(null);
-    const [selectedOptions, setSelectedOptions] = useState<{[key: number]: string}>({});
+    const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: string | string[] }>({});
     const [roomError, setRoomError] = useState('');
     const [submissionStatus, setSubmissionStatus] = useState('not submitted');
+    const [doesRoomExist, setDoesRoomExist] = useState(true);
 
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -43,6 +50,19 @@ const SurveyRoom = () => {
     const { isAuthenticated, token} = useAuth();
     
     const navigate = useNavigate();
+
+    /*useEffect(() => {
+      async function loadRoom() {
+        if(isAuthenticated && roomId && token){
+          if(!await roomExists(roomId, token)){
+            console.log("umpa lumpa")
+            setDoesRoomExist(false);
+          }
+        }
+      }
+    loadRoom();
+  }, [isAuthenticated, roomId, token]);*/
+
     useEffect(() => {
       const fetchSurvey = async () => {
         if (!surveyId) return;
@@ -59,32 +79,39 @@ const SurveyRoom = () => {
           console.error('Error fetching survey:', error);
         }
       };
-  
+      
       fetchSurvey();
     }, [surveyId]);
 
     useEffect(() => {
       const joinRoom = async () => {
         
-        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
-        if (!tokenCookie) {
-          throw new Error('Token not found in cookies');
-        }
-        const headers = { Authorization: `Bearer ${tokenCookie}` };
+        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+        const headers = { Authorization: `Bearer ${token}` };
   
         // Join the room
         try {
           console.log('Joining room with ID:', roomId);
-          await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers: { Authorization: `Bearer ${tokenCookie}` } });
+          await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers });
         } catch (error: any) {
           if (error.response && error.response.status === 404) {
             setRoomError(`Room with ID ${roomId} not found`);
           }
         }
       };
-  
-      joinRoom();
-    }, []);
+      async function loadRoom() {
+        if(isAuthenticated && roomId && token){
+          if(await roomExists(roomId, token)){
+            joinRoom();
+          }else{
+            console.log("umpa lumpa")
+            setDoesRoomExist(false);
+          }
+        }
+      }
+      
+      loadRoom();
+    }, [doesRoomExist]);
 
     useEffect(() => {
       if (submissionStatus === 'submitted') {
@@ -94,48 +121,78 @@ const SurveyRoom = () => {
       }
     }, [submissionStatus]);
   
-    const handleOptionChange = (questionId: number, e: React.ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.target;
-      setSelectedOptions(prevSelectedOptions => ({
-        ...prevSelectedOptions,
-        [questionId]: value
-      }));
+    const handleOptionChange = (questionId: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const target = e.target as HTMLInputElement;
+      const { value, checked, type } = target;
+      setSelectedOptions(prevSelectedOptions => {
+        const previousSelection = prevSelectedOptions[questionId];
+        if (type === 'checkbox') {
+          if (Array.isArray(previousSelection)) {
+            if (checked) {
+              return {
+                ...prevSelectedOptions,
+                [questionId]: [...previousSelection, value]
+              };
+            } else {
+              return {
+                ...prevSelectedOptions,
+                [questionId]: previousSelection.filter(choice => choice !== value)
+              };
+            }
+          } else {
+            return {
+              ...prevSelectedOptions,
+              [questionId]: [value]
+            };
+          }
+        } else {
+          return {
+            ...prevSelectedOptions,
+            [questionId]: value
+          };
+        }
+      });
     };
   
     const handleSubmit = async () => {
-        const userChoices: UserChoiceDto[] = Object.keys(selectedOptions).map(questionId => ({
+      const userChoices: UserChoiceDto[] = Object.keys(selectedOptions).map(questionId => {
+        const answer = selectedOptions[parseInt(questionId)];
+        return {
           questionId: parseInt(questionId),
-          answer: [selectedOptions[parseInt(questionId)]]
-        }));
-      
-        const filledSurveyData: SubmitSurveyDto = {
-          name: 'Filled Survey', 
-          surveyId: intSurveyId,
-          userChoices: userChoices
+          answer: Array.isArray(answer) ? answer : [answer]
         };
-      
-        setFilledSurvey(filledSurveyData);
-        console.log(filledSurvey)
-        try {
-            const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
-
-            const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
-            console.log('Wypełniona ankieta została pomyślnie przesłana:', response.data);
-            setErrorMessage('');
-            setSubmissionStatus('submitted');
-          } catch (error) {
-            console.error('Błąd podczas przesyłania wypełnionej ankiety:', error);
-            if ((error as any).response) {
-              if ((error as any).response.status === 403) {
-                setErrorMessage('You have already submitted this survey');
-              } else if ((error as any).response.status === 404) {
-                setErrorMessage('The room does not exist or has been closed');
-              }
-            }
-            setRedirectToMenu(true);
+      });
+    
+      const filledSurveyData: SubmitSurveyDto = {
+        name: 'Filled Survey', 
+        surveyId: intSurveyId,
+        userChoices: userChoices
+      };
+    
+      setFilledSurvey(filledSurveyData);
+      console.log(filledSurvey)
+      try {
+        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+    
+        const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+        console.log('Wypełniona ankieta została pomyślnie przesłana:', response.data);
+        setErrorMessage('');
+        setSubmissionStatus('submitted');
+      } catch (error) {
+        console.error('Błąd podczas przesyłania wypełnionej ankiety:', error);
+        if ((error as any).response) {
+          if ((error as any).response.status === 403) {
+            setErrorMessage('You have already submitted this survey');
+          } else if ((error as any).response.status === 404) {
+            setErrorMessage('The room does not exist or has been closed');
+          }
         }
+        setRedirectToMenu(true);
+      }
     };
-  
+    if (!doesRoomExist) {
+      return <RoomErrorPage />; // Render an error component if the room does not exist
+    }
     return (
       <div>
         {roomError ? (
@@ -151,29 +208,39 @@ const SurveyRoom = () => {
             <p>ID: {survey.id}</p>
             <h3>Questions:</h3>
             <ul>
-              {survey.questions && survey.questions.map((question, index) => (
-                <li key={index}>
-                  <p>{question.title}</p>
-                  <p>Type: {question.type}</p>
-                  {question.possibleChoices && (
+            {survey.questions && survey.questions.map((question, index) => (
+              <li key={index}>
+                <p>{question.title}</p>
+                <p>Type: {question.type}</p>
+                {question.type === QuestionType.TEXT ? (
+                  <textarea
+                    name={`question-${question.id}`}
+                    value={selectedOptions[question.id] || ''}
+                    onChange={(e) => handleOptionChange(question.id, e)}
+                  />
+                ) : (
+                  question.possibleChoices && (
                     <div>
                       <p>Possible Choices:</p>
                       {question.possibleChoices.map((choice, choiceIndex) => (
                         <label key={choiceIndex}>
                           <input
-                            type="radio"
+                            type={question.type === QuestionType.ONE_CHOICE ? "radio" : "checkbox"}
                             name={`question-${question.id}`}
                             value={choice}
-                            checked={selectedOptions[question.id] === choice}
-                            onChange={(e) => handleOptionChange(question.id, e)}
+                            checked={Array.isArray(selectedOptions[question.id]) 
+                              ? selectedOptions[question.id].includes(choice)
+                              : selectedOptions[question.id] === choice}
+                              onChange={(e) => handleOptionChange(question.id, e)}
                           />
                           {choice}
                         </label>
                       ))}
                     </div>
-                  )}
-                </li>
-              ))}
+                  )
+                )}
+              </li>
+            ))}
             </ul>
             <button onClick={handleSubmit}>Wyślij</button>
             {errorMessage && 

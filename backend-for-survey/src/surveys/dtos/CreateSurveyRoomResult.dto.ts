@@ -14,4 +14,4 @@ export class CreateSurveyRoomResultDto {
     @ValidateNested({ each: true })
     questionRoomResultDto: CreateQuestionRoomResultDto[];
 
-  }
+}

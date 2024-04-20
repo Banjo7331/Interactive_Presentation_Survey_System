@@ -47,7 +47,6 @@ export class SurveyService {
       await this.questionRepository.save(questionEntities);
 
       createdSurvey.questions = questionEntities;
-      this.userService.addSurveyToUser(createSurvey.user.id, createdSurvey);
     }
   
     return createdSurvey;

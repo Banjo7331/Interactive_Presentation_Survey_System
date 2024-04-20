@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm/entities/userElm/User";
 import { Repository } from "typeorm";
@@ -23,12 +23,12 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({ where: { username } });
     if (existingUser) {
       console.error('Username is already taken:', username);
-      throw new Error('Username is already taken');
+      throw new ConflictException('Username is already taken', 'USERNAME_CONFLICT');
     }
     const existingUserWithSameEmail = await this.userRepository.findOne({ where: { email } });
     if (existingUserWithSameEmail) {
       console.error('Email is already in use:', email);
-      throw new Error('Email is already in use');
+      throw new ConflictException('Email is already in use', 'EMAIL_CONFLICT');
     }
     const isVerified = true;
     const newUser = this.userRepository.create({ username, password,email,isVerified, createdAt: new Date() });
@@ -47,28 +47,13 @@ export class UserService {
   async findUserByUsername(username: string){
     return this.userRepository.findOne({ where: { username } });
   }
+  async findUserByEmail(email: string){
+    return this.userRepository.findOne({ where: { email } });
+  }
   async findUserById(id: number): Promise<User> {
     return await this.userRepository.findOne({ where: { id } });
   }
-  async addSurveyToUser(userId: number, survey: Survey): Promise<User> {
-    const id = userId
-    const user = await this.userRepository.findOneBy({id});
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-    if (!user.surveys) {
-      user.surveys = [];
-    }
-    
-    user.surveys.push(survey);
-
-    // Save the user with the updated surveys array
-    await this.userRepository.save(user);
-
-    return user;
-  }
-
+  
   async isVerified(email: string): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { email } });
   

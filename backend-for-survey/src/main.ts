@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware, ValidationPipe } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Injectable()
@@ -19,7 +19,7 @@ async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
   //app.use(new CorsMiddleware().use);
-
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const corsOptions: CorsOptions = {
     origin: ['http://localhost:5173', 'http://172.17.34.190:5173'], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

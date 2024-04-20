@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/typeorm/entities/userElm/User';
@@ -37,7 +37,16 @@ export class AuthService {
   
     return token;
   }
-
+  async checkUserExists(username: string, email: string) {
+    const existingUser = await this.userService.findUserByUsername(username);
+    if (existingUser) {
+      throw new ConflictException('Username is already taken', 'USERNAME_CONFLICT');
+    }
+    const existingUserWithSameEmail = await this.userService.findUserByEmail(email);
+    if (existingUserWithSameEmail) {
+      throw new ConflictException('Email is already in use', 'EMAIL_CONFLICT');
+    }
+  }
   async sendVerificationEmail(email: string, token: string) {
     const transporter = nodemailer.createTransport({
       port: 465,
