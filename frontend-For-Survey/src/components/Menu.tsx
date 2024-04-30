@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react'
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import CreateSurvey from './CreateSurvey';
 import GetSurvey from './GetSurvey';
 import { useAuth } from '../utils/IsLogged';
@@ -13,20 +13,20 @@ export default function Menu() {
   const [nickname, setNickname] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      throw new Error('Token not found');
+    if (isAuthenticated) {
+      
+      const headers = { Authorization: `Bearer ${token}` };
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3000/users/data`, { headers });
+          console.log(response);
+          setNickname(response.data.username);
+        } catch (error) {
+          console.error('Error fetching surveys:', error);
+        }
+      };
+      fetchData();
     }
-    const headers = { Authorization: `Bearer ${token}` };
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/users/data`, { headers });
-        console.log(response);
-        setNickname(response.data.username);
-      } catch (error) {
-        console.error('Error fetching surveys:', error);
-      }
-    };
-    fetchData();
   }, []);
   
   const handleCreateSurveyClick = () => {
@@ -52,7 +52,7 @@ export default function Menu() {
     <div className="container-fluid d-flex justify-content-between">
       <div className="btn-group" role="group" aria-label="Basic example">
         <button onClick={handleCreateSurveyClick} className="btn btn-primary me-2">Create Survey</button>
-        <button onClick={handleChooseSurveyClick} className="btn btn-primary me-2">Get Survey</button>
+        <button onClick={handleChooseSurveyClick} className="btn btn-primary me-2">Find Survey</button>
       </div>
       <ProfileButton nickname={nickname} />
     </div>

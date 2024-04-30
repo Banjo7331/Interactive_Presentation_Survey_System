@@ -55,6 +55,7 @@ export class AuthController{
 
     @Get('is-verified')
     async isVerified(@Query('email') email: string) {
+      
       const isVerified = await this.userService.isVerified(email);
       return { isVerified };
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
 function VerifyEmailPage() {
@@ -10,7 +10,9 @@ function VerifyEmailPage() {
     useEffect(() => {
     if (!hasRun.current) {
         const token = new URLSearchParams(window.location.search).get('token');
-
+        
+        console.log('Token:', token);
+        
         const verifyEmail = async () => {
         try {
             const response = await axios.get(`http://localhost:3000/auth/verify?token=${token}`);

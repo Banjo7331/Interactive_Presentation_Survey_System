@@ -1,6 +1,6 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/IsLogged';
 
 interface QuestionDto {
@@ -20,7 +20,6 @@ export default function GetSurvey() {
   const [surveyId, setSurveyId] = useState<number | null>(null); // ID ankiety, którą chcesz pobrać
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState<Object>({});
-  const [roomClosed, setRoomClosed] = useState<boolean>(false);
   
   const [error, setError] = useState<string | null>(null);
   const [surveys, setSurveys] = useState<SurveyDto[]>([]);
@@ -32,23 +31,25 @@ export default function GetSurvey() {
     const fetchSurveys = async () => {
       try {
         if (!isAuthenticated) {
-          throw new Error('Token not found');
-        }
-        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
-        const headers = { Authorization: `Bearer ${token}` };
-        console.log('Request headers:', headers);
-        
-        if (surveyNameInput) { // Add this line
-          const response = await axios.get(`http://localhost:3000/surveys/search/${surveyName}`, { headers });
-          console.log(response);
-          setSurveys(response.data);
+          navigate('/');
+        }else{
+          //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
+          const headers = { Authorization: `Bearer ${token}` };
+          console.log('Request headers:', headers);
+          
+          if (surveyNameInput) { // Add this line
+            const response = await axios.get(`http://localhost:3000/surveys/search/${surveyName}`, { headers });
+            console.log(response);
+            setSurveys(response.data);
 
-          const survey = response.data.find((survey: any) => survey.title === surveyName);
-          if (survey) {
-            setSurveyId(survey.id);
-            console.log("Survey Id"+survey.id);
-          } else {
-            setSurveyId(null); // set to null if no survey found
+            const survey = response.data.find((survey: any) => survey.title === surveyName);
+            setSurvey(survey);
+            if (survey) {
+              setSurveyId(survey.id);
+              console.log("Survey Id"+survey.id);
+            } else {
+              setSurveyId(null); // set to null if no survey found
+            }
           }
         }
       } catch (error) {
@@ -59,33 +60,33 @@ export default function GetSurvey() {
     fetchSurveys();
   }, [surveyName]);
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /*const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSurveyNameInput(e.target.value);
-  };
+  };*/
   
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  /*const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSurveyName(surveyNameInput);
-  };
+  };*/
   const handleInputChang2e = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSurveyName(event.target.value);
     setSurveyNameInput(event.target.value);
     console.log(surveyName);
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  /*const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value)) {
       setSurveyId(value);
     } else {
       setSurveyId(0); // Możesz też zachować poprzednią wartość surveyId
     }
-  };
+  };*/
   const handleSurveyClick = (id: number, title: string) => {
     setSurveyNameInput(title);
     setSurveyId(id);
   };
-  const [roomCreated, setRoomCreated] = useState(false);
+  //const [roomCreated, setRoomCreated] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,7 +112,7 @@ export default function GetSurvey() {
       console.log('Survey room created:', response.data);
       console.log('Room ID:', roomId2);
       console.log('Room ID in useState:', roomId);
-      setRoomCreated(true);
+      //setRoomCreated(true);
       navigate(`/survey-results/${userId}/${surveyId}/${roomId2}`); // Use both surveyId and roomId in the URL
     } catch (error) {
       console.error('Error creating survey room:', error);
@@ -134,7 +135,7 @@ export default function GetSurvey() {
           Enter Survey Name:
           <input type="text" value={surveyNameInput} onChange={handleInputChang2e} />
         </label>
-        <button type="submit">Search surveys</button>
+        <button type="submit">Open Room</button>
       </form>
       {error && <div className="alert alert-danger">{error}</div>}
       {surveys && surveys.map((survey, index) => (

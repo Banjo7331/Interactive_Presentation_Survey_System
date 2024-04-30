@@ -33,7 +33,11 @@ export class AuthService {
   async generateVerificationToken(createUserDto: CreateUserDto) {
     // Generate a unique token with the user's information encoded in it
     // This is just a placeholder implementation.
-    const token = jwt.sign(createUserDto, 'abc123', { expiresIn: '1d' });
+    const { username, email, password } = createUserDto;
+
+    const payload = { username, email, password };
+
+    const token = jwt.sign(payload, 'abc123', { expiresIn: '1d' });
   
     return token;
   }
@@ -77,7 +81,7 @@ export class AuthService {
         <a href="http://localhost:5173">http://localhost:5173</a>
       `,
     };
-    
+    console.log("TOKENISKO",token);
     await transporter.sendMail(mailOptions);
   }
 
@@ -85,7 +89,7 @@ export class AuthService {
     try {
       // Verify the token and get the user's information
       const createUserDto = jwt.verify(token, 'abc123') as CreateUserDto;
-      console.log(createUserDto);
+      console.log("FAKIN USER ",createUserDto);
       return createUserDto;
     } catch (error) {
       console.log('Token verification failed:', error);

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/IsLogged';
@@ -51,26 +51,27 @@ export default function CreateSurvey() {
     try {
       //const token = localStorage.getItem('token');
       if (!isAuthenticated) {
-        throw new Error('Token not found in localStorage');
+        navigate('/');
+      }else{
+        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
+        const headers = { Authorization: `Bearer ${token}` };
+        console.log('Request headers:', headers);
+        const response = await axios.post(
+          'http://localhost:3000/surveys/create',
+          formData,
+          { headers }
+        ).then(res =>{ 
+            console.log('Survey created successfully:', res.data);
+            console.log(formData)
+            navigate('/menu');
+        })
+        .catch(err => {
+            if (err.response) {
+                setErrorMessage(err.response.data.message);
+            }
+        });
+        console.log(response);
       }
-      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-      const headers = { Authorization: `Bearer ${token}` };
-      console.log('Request headers:', headers);
-      const response = await axios.post(
-        'http://localhost:3000/surveys/create',
-        formData,
-        { headers }
-      ).then(res =>{ 
-          console.log('Survey created successfully:', res.data);
-          console.log(formData)
-          navigate('/menu');
-      })
-      .catch(err => {
-          if (err.response) {
-              setErrorMessage(err.response.data.message);
-          }
-      });;
-      
     } catch (err) {
       console.error('Error creating survey:', err);
     }

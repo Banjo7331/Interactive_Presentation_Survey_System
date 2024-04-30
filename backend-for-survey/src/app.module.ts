@@ -11,24 +11,42 @@ import { AuthModule } from './authentication/auth.module';
 import { SocketIoAdapter } from './surveys/websocket/socketAdapter';
 import { SurveyRoomResult } from './typeorm/entities/surveyElm/SurveyRoomResult';
 import { QuestionRoomResult } from './typeorm/entities/surveyElm/QuestionRoomResult';
-
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import databaseConfig from './config/database.config';
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'testuser',
-      password: 'testuser123',
-      database: 'post_db5',
-      entities: [
-        User,
-        Survey,
-        Question,
-        SurveyRoomResult,
-        QuestionRoomResult
-      ],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [databaseConfig],
+    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: 'localhost',
+    //   port: 5432,
+    //   username: 'testuser',
+    //   password: 'testuser123',
+    //   database: 'post_db5',
+    //   entities: [
+    //     User,
+    //     Survey,
+    //     Question,
+    //     SurveyRoomResult,
+    //     QuestionRoomResult
+    //   ],
+    //   synchronize: true,
+    // }),
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.host'),
+        port: configService.get('database.port'),
+        username: configService.get('database.username'),
+        password: configService.get('database.password'),
+        database: configService.get('database.database'),
+        entities: [User, Survey, Question, SurveyRoomResult,QuestionRoomResult],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,
@@ -42,3 +60,5 @@ import { QuestionRoomResult } from './typeorm/entities/surveyElm/QuestionRoomRes
   ],
 })
 export class AppModule {}
+
+

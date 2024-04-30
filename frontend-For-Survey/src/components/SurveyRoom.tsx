@@ -51,25 +51,13 @@ const SurveyRoom = () => {
     
     const navigate = useNavigate();
 
-    /*useEffect(() => {
-      async function loadRoom() {
-        if(isAuthenticated && roomId && token){
-          if(!await roomExists(roomId, token)){
-            console.log("umpa lumpa")
-            setDoesRoomExist(false);
-          }
-        }
-      }
-    loadRoom();
-  }, [isAuthenticated, roomId, token]);*/
-
     useEffect(() => {
       const fetchSurvey = async () => {
         if (!surveyId) return;
         try {
-          if (!isAuthenticated) {
-            throw new Error('Token not found in localStorage');
-          }
+          //if (!isAuthenticated) {
+          //  throw new Error('Token not found in localStorage');
+          //}
           //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
           const headers = { Authorization: `Bearer ${token}` };
           console.log('Request headers:', headers);

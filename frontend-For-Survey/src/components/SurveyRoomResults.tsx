@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import io, { Socket } from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
-import { aggregateData } from '../utils/agregateData';
+//import { aggregateData } from '../utils/agregateData';
 import { useAuth } from '../utils/IsLogged';
 import QRCode from 'qrcode.react';
 import { roomExists } from '../utils/roomExists';
@@ -48,9 +48,9 @@ interface SurveyRoomResultDto {
 
 const SurveyResultsPage = () => {
   const [surveyResults, setSurveyResults] = useState<FilledSurvey[]>([]);
-  const [data, setData] = useState<Record<string, Record<string, number>> | null>(null);
+  //const [data, setData] = useState<Record<string, Record<string, number>> | null>(null);
   const { userId,surveyId, roomId } = useParams();
-  const [ws, setWS] = React.useState<Socket | null>(null)
+  //const [ws, setWS] = React.useState<Socket | null>(null)
   const wsRef = React.useRef<Socket | null>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
 
@@ -111,8 +111,8 @@ const SurveyResultsPage = () => {
         // Update survey results when a new survey is submitted
         console.log("gites")
         setSurveyResults(prevSurveyResults => [...prevSurveyResults, submittedData])
-        const aggregatedData = aggregateData(surveyResults);
-        setData(aggregatedData);
+        //const aggregatedData = aggregateData(surveyResults);
+        //setData(aggregatedData);
         setSubmittedUserCount(prevCount => prevCount + 1);
       });
       wsRef.current = socket;

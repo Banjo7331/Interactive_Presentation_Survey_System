@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useAuth } from './IsLogged';
 
 
 export async function roomExists(roomId: string, authToken: string): Promise<boolean> {

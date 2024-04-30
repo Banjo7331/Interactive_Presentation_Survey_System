@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate} from 'react-router-dom';
 import axios from 'axios'; // Assuming you're using axios for HTTP requests
 import { useAuth } from '../utils/IsLogged';
 import ConfirmationWindow from '../services/ConfirmationWindow';
@@ -32,7 +32,7 @@ interface SurveyRoomResultDto {
 }
 
  const UserProfile = () => {
-  const [user, setUser] = useState(null);
+  //const [user, setUser] = useState(null);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [surveyResults, setSurveyResults] = useState<SurveyRoomResultDto[]>([]);
   

@@ -1,21 +1,17 @@
-import React,{ useEffect, useState } from 'react'
+import { useEffect,  } from 'react'
 
-import axios, { Axios } from 'axios'
 import Login from './components/Login'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, } from 'react-router-dom'
 import Signup from './components/Signup'
 import Menu from './components/Menu'
-import CreateSurvey from './components/CreateSurvey'
 import { useAuth } from './utils/IsLogged'
 import SurveyRoom from './components/SurveyRoom'
 import SurveyResultsPage from './components/SurveyRoomResults'
 import VerifyEmailPage from './components/VerifyEmail'
 import WaitingForVerificationPage from './components/WaitingForVerification'
-import UserProfile from './components/UserProfile'
-import RoomErrorPage from './services/RoomErrorPage'
 
 function App() {
-  const { isAuthenticated, login } = useAuth();
+  const { login } = useAuth();
   //localStorage.removeItem('token');
   useEffect(() => {
     const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
