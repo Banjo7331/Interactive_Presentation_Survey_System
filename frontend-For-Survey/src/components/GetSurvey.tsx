@@ -60,28 +60,12 @@ export default function GetSurvey() {
     fetchSurveys();
   }, [surveyName]);
 
-  /*const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSurveyNameInput(e.target.value);
-  };*/
-  
-  /*const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSurveyName(surveyNameInput);
-  };*/
   const handleInputChang2e = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSurveyName(event.target.value);
     setSurveyNameInput(event.target.value);
     console.log(surveyName);
   };
 
-  /*const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) {
-      setSurveyId(value);
-    } else {
-      setSurveyId(0); // Możesz też zachować poprzednią wartość surveyId
-    }
-  };*/
   const handleSurveyClick = (id: number, title: string) => {
     setSurveyNameInput(title);
     setSurveyId(id);

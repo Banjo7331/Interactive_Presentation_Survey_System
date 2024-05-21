@@ -91,6 +91,7 @@ export class SurveyRoomService {
     createdSurveyRoomResult.questionRoomResult = [];
     console.log('przeslane dane:', surveyRoomResultDto);
     console.log('createdSurveyRoomResult after save:', createdSurveyRoomResult);
+    
     if (surveyRoomResultDto.questionRoomResultDto && surveyRoomResultDto.questionRoomResultDto.length > 0) {
       const roomAnswers = await Promise.all(surveyRoomResultDto.questionRoomResultDto.map(async (roomAnswersData, index) => {
           const question = survey.questions[index]; // Pobierz pytanie na podstawie indeksu

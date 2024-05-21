@@ -95,7 +95,6 @@ export class SurveyService {
 
     const surveyAttempt = new FilledSurvey();
     surveyAttempt.survey = survey;
-    surveyAttempt.user = createFilledSurveyData.user;
     surveyAttempt.name = createFilledSurveyData.name;
   
     // Don't save the surveyAttempt to the database

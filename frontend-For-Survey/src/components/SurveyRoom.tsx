@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../utils/IsLogged';
 import { roomExists } from '../utils/roomExists';
 import RoomErrorPage from '../services/RoomErrorPage';
+import { v4 as uuidv4 } from 'uuid';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 interface Survey {
     id: number;
@@ -47,20 +49,20 @@ const SurveyRoom = () => {
 
     const [redirectToMenu, setRedirectToMenu] = useState(false);
 
-    const { isAuthenticated, token} = useAuth();
+    const {token} = useAuth();
     
     const navigate = useNavigate();
 
     useEffect(() => {
       const fetchSurvey = async () => {
         if (!surveyId) return;
+        let deviceId = await localStorage.getItem('device-id');
+        const headers = { 
+          Authorization: `Bearer ${token}`,
+          'Device-Id': deviceId
+        };
         try {
-          //if (!isAuthenticated) {
-          //  throw new Error('Token not found in localStorage');
-          //}
-          //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-          const headers = { Authorization: `Bearer ${token}` };
-          console.log('Request headers:', headers);
+          console.log("nie wiem o co chodzi");
           const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers });
           setSurvey(response.data);
         } catch (error) {
@@ -73,10 +75,18 @@ const SurveyRoom = () => {
 
     useEffect(() => {
       const joinRoom = async () => {
+        let deviceId = localStorage.getItem('device-id');
+        if (!deviceId) {
+          // If not, generate a new one and store it
+          deviceId = uuidv4();
+          localStorage.setItem('device-id', deviceId);
+        }
         
-        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
-        const headers = { Authorization: `Bearer ${token}` };
-  
+        const headers = { 
+          Authorization: `Bearer ${token}`,
+          'Device-Id': deviceId
+        };
+
         // Join the room
         try {
           console.log('Joining room with ID:', roomId);
@@ -88,8 +98,8 @@ const SurveyRoom = () => {
         }
       };
       async function loadRoom() {
-        if(isAuthenticated && roomId && token){
-          if(await roomExists(roomId, token)){
+        if(roomId){
+          if(await roomExists(roomId)){
             joinRoom();
           }else{
             console.log("umpa lumpa")
@@ -104,7 +114,7 @@ const SurveyRoom = () => {
     useEffect(() => {
       if (submissionStatus === 'submitted') {
         setTimeout(() => {
-          navigate('/menu'); // Replace '/menu' with the path to your menu page
+          navigate('/menu'); 
         }, 5000);
       }
     }, [submissionStatus]);
@@ -160,9 +170,19 @@ const SurveyRoom = () => {
       setFilledSurvey(filledSurveyData);
       console.log(filledSurvey)
       try {
-        const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
-    
-        const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers: { Authorization: `Bearer ${tokenCookie}` } });
+        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Get the token, ignoring the "token=" prefix
+        let deviceId = localStorage.getItem('device-id');
+        if (!deviceId) {
+          // If not, generate a new one and store it
+          deviceId = uuidv4();
+          localStorage.setItem('device-id', deviceId);
+        }
+        
+        const headers = { 
+          Authorization: `Bearer ${token}`,
+          'Device-Id': deviceId
+        };
+        const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers});
         console.log('Wypełniona ankieta została pomyślnie przesłana:', response.data);
         setErrorMessage('');
         setSubmissionStatus('submitted');

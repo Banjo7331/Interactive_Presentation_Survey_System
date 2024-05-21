@@ -18,6 +18,7 @@ export class CreatedFilledSurveyDto {
   
   survey: Survey;
   
-  user: User;
+  //user: User;
+  
 
 }

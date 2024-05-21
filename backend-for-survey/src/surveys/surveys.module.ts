@@ -12,6 +12,9 @@ import { UserService } from "src/users/services/user.service";
 import { SurveyRoomService } from "./services/surveyRoom.service";
 import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
 import { QuestionRoomResult } from "src/typeorm/entities/surveyElm/QuestionRoomResult";
+import { DeviceGuard } from "src/authentication/guards/device.guard";
+import { EitherGuard } from "src/authentication/guards/either.guard";
+import { JwtAuthGuard } from "src/authentication/guards/jwt.guard";
 @Module({
   imports: [TypeOrmModule.forFeature([Survey,Question,User,SurveyRoomResult,QuestionRoomResult])],
   providers: [SurveyService, 
@@ -21,6 +24,9 @@ import { QuestionRoomResult } from "src/typeorm/entities/surveyElm/QuestionRoomR
       provide: 'USER_SERVICE',
       useClass: UserService,
     },
+    DeviceGuard,
+    EitherGuard,
+    JwtAuthGuard,
   ],
   controllers: [SurveyController],
 })

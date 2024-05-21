@@ -131,7 +131,7 @@ const SurveyResultsPage = () => {
   useEffect(() => {
     async function loadRoom() {
       if(isAuthenticated && roomId && token){
-        if(!await roomExists(roomId, token)){
+        if(!await roomExists(roomId)){
           setDoesRoomExist(false);
         }
       }

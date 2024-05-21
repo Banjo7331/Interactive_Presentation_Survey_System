@@ -11,6 +11,10 @@ import { FilledSurvey } from "src/typeorm/entities/surveyElm/FilledSurvey";
 import { QuestionTypeValidationPipe } from "../pipes/question-type-validation.pipe";
 import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
 import { CreateSurveyRoomResultDto } from "../dtos/CreateSurveyRoomResult.dto";
+import { DeviceGuard } from "src/authentication/guards/device.guard";
+import { v4 as uuidv4 } from 'uuid';
+import { EitherGuard } from "src/authentication/guards/either.guard";
+
 
 @Controller('surveys')
 export class SurveyController {
@@ -31,11 +35,11 @@ export class SurveyController {
 
     return createdSurvey;
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EitherGuard)
   @Get(':id')
-  getUsersSurvey(@Param('id',ParseIntPipe) surveyId:number,@Request() req) {
-    const user = req.user;
-    console.log(user);
+  getSurveyById(@Param('id',ParseIntPipe) surveyId:number,@Request() req) {
+    //const user = req.user;
+    //console.log(user);
     const survey = this.surveyService.getSurveyById(surveyId);
     return survey;
   }
@@ -58,25 +62,24 @@ export class SurveyController {
   async deleteSurveyRoomResult(@Param('id',ParseIntPipe) roomId:number) {
     await this.roomService.deleteSurveyRoomResult(roomId);
   }
-  
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(DeviceGuard)
   @Post(':surveyId/:roomId/submit')
   async submitSurvey(@Request() req,@Param('roomId') roomId: string, @Param('surveyId', ParseIntPipe) surveyId: number, @Body() createSurveyAnswerData: CreatedFilledSurveyDto): Promise<FilledSurvey> {
-    const user = req.user;
-    createSurveyAnswerData.user = user;
+    const deviceId = req.headers['device-id'];
+    //createSurveyAnswerData.user = deviceId;
     const room = this.roomService.getRoomById(roomId);
     if (!room) {
       throw new NotFoundException(`Room with ID ${roomId} not found`);
     }
     console.log("w srodku")
-    if (room.submissions.has(user.id)) {
+    if (room.submissions.has(deviceId)) {
       throw new HttpException('You have already submitted this survey', HttpStatus.FORBIDDEN);
     }
 
     const submittedSurvey = await this.surveyService.submitSurvey(surveyId, createSurveyAnswerData);
     
     // Update the room session
-    room.submissions.add(user.id);
+    room.submissions.add(deviceId);
     
     await this.surveyGateway.handleSurveySubmission(null,submittedSurvey);
     console.log(submittedSurvey);
@@ -90,7 +93,6 @@ export class SurveyController {
     this.surveyGateway.server.emit('roomCreation', { roomId, userId });
     return { roomId, userId };
   }
-  @UseGuards(JwtAuthGuard)
   @Get('get-room/:id')
   async getRoom(@Param('id') roomId: string) {
     return this.roomService.getRoomById(roomId);
@@ -103,11 +105,11 @@ export class SurveyController {
     this.roomService.closeRoom(roomId, userId,surveyRoomResultDto, surveyId);
     return { message: 'Room closed successfully' };
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(DeviceGuard)
   @Post(':id/join')
   async joinRoom(@Param('id') roomId: string, @Request() req: any) {
   try {
-    const participantId = req.user.id; // Get the participant's ID from the request
+    const deviceId = req.headers['device-id']; // Get the participant's ID from the request
 
     // Get the room
     const room = this.roomService.getRoomById(roomId);
@@ -115,14 +117,14 @@ export class SurveyController {
     if (!room) {
       throw new NotFoundException(`Room with ID ${roomId} not found`);
     }
-    if (room.participants.has(participantId)) {
+    if (room.participants.has(deviceId)) {
       return { message: 'You have already joined this room' };
     }
     // Check if the participant has already submitted their survey
-    if (room.submissions.has(participantId)) {
+    if (room.submissions.has(deviceId)) {
       throw new HttpException('You have already submitted your survey and cannot rejoin the room', HttpStatus.FORBIDDEN);
     }
-    this.roomService.joinRoom(roomId, participantId);
+    this.roomService.joinRoom(roomId, deviceId);
     this.surveyGateway.server.emit('userJoined');
     return { message: 'Joined room successfully' };
   } catch (error) {

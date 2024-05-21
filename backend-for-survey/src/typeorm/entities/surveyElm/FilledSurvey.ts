@@ -19,9 +19,8 @@ export class FilledSurvey {
   @JoinColumn({ name: 'surveyId' })
   survey: Survey;
   
-  @ManyToOne(() => User,{ eager: true })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  
+  //deviceId: User;
 
   
 }

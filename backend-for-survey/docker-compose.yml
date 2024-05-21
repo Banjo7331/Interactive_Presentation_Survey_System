@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   frontend:
     build:
@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - '5173:5173'
+    volumes:
+      - ../frontend-For-Survey:/app
   nestjs_api:
     build:
       context: . 
@@ -15,6 +17,8 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=development
+    volumes:
+      - .:/app
     depends_on:
       - postgres_db
   postgres_db:
