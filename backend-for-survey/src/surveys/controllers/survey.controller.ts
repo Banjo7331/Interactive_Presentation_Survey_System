@@ -12,7 +12,6 @@ import { QuestionTypeValidationPipe } from "../pipes/question-type-validation.pi
 import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
 import { CreateSurveyRoomResultDto } from "../dtos/CreateSurveyRoomResult.dto";
 import { DeviceGuard } from "src/authentication/guards/device.guard";
-import { v4 as uuidv4 } from 'uuid';
 import { EitherGuard } from "src/authentication/guards/either.guard";
 
 

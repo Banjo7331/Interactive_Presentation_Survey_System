@@ -68,7 +68,7 @@ const SurveyResultsPage = () => {
       if (!surveyId) return;
       try {
         if (!isAuthenticated) {
-          throw new Error('Token not found in localStorage');
+            navigate('/');
         }
         //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
         const headers = { Authorization: `Bearer ${token}` };
@@ -145,9 +145,11 @@ const SurveyResultsPage = () => {
       // For text questions, just display the answers
       const textAnswers = surveyResults.map(surveyResult => surveyResult.userChoices[index].answer);
       return (
-        <div key={index}>
-          <h3>{question.title}</h3>
-          {textAnswers.map((answer, i) => <p key={i}>{answer}</p>)}
+        <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
+          <div className="w-1/2">
+            <h3>{question.title}</h3>
+            {textAnswers.map((answer, i) => <p key={i}>{answer}</p>)}
+          </div>
         </div>
       );
     } else {
@@ -184,13 +186,15 @@ const SurveyResultsPage = () => {
       };
   
       return (
-        <div key={index}>
-          <h3>{question.title}</h3>
-          <ReactApexChart options={options} series={options.series} type="bar" />
+        <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
+          <div className="w-1/2">
+            <h3>{question.title}</h3>
+            <ReactApexChart options={options} series={options.series} type="bar" />
+          </div>
         </div>
       );
     }
-  }) || null; // Render nothing if survey is null
+  }) || null;
 
   const deleteRoom = async () => {
     try {
@@ -236,23 +240,25 @@ const SurveyResultsPage = () => {
     return <RoomErrorPage />; // Render an error component if the room does not exist
   }
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <button onClick={deleteRoom}>Close Room</button>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
-        <p>http://localhost:5173/survey-room/{surveyId}/{roomId}</p>
-        <QRCode value={`http://localhost:5173/survey-room/${surveyId}/${roomId}`} />
-      </div>
-      {charts}
-      <div className="card" style={{ position: 'absolute', top: 0, right: 0, width: '18rem' }}>
-        <div className="card-body">
+  <div className="flex flex-col items-center space-y-5">
+    <div className="d-flex justify-content-between">
+        <button onClick={deleteRoom} className="px-4 py-2 bg-blue-500 text-white rounded">Close Room</button>
+        <div>
           <h5 className="card-title">Survey Count</h5>
           <p className="card-text">{submittedUserCount}/{joinedCount}</p>
         </div>
-      </div>
     </div>
-  );
+    <div className="flex flex-col items-center text-center mt-5 p-5 border-2 border-gray-300 rounded-lg shadow-lg">
+      <QRCode className="mb-4" value={`http://localhost:5173/survey-room/${surveyId}/${roomId}`} />
+      <p className="text-gray-700 text-sm">http://localhost:5173/survey-room/{surveyId}/{roomId}</p>
+    </div>
+    {charts && charts.map((chart, index) => (
+      <div key={index} className={`w-1/3 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto mr-5' : 'mr-auto ml-5'}`}>
+        {chart}
+      </div>
+    ))}
+  </div>
+);
 };
 
 export default SurveyResultsPage;

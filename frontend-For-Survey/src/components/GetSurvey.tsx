@@ -37,7 +37,7 @@ export default function GetSurvey() {
           const headers = { Authorization: `Bearer ${token}` };
           console.log('Request headers:', headers);
           
-          if (surveyNameInput) { // Add this line
+          if (surveyNameInput && surveyNameInput.length >= 3){
             const response = await axios.get(`http://localhost:3000/surveys/search/${surveyName}`, { headers });
             console.log(response);
             setSurveys(response.data);

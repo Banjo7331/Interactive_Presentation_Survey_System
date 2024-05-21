@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../utils/IsLogged';
 import { roomExists } from '../utils/roomExists';
+import { getDeviceId } from '../utils/getDeviceId';
 import RoomErrorPage from '../services/RoomErrorPage';
 import { v4 as uuidv4 } from 'uuid';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 interface Survey {
     id: number;
@@ -42,7 +42,7 @@ const SurveyRoom = () => {
     const [filledSurvey, setFilledSurvey] = useState<SubmitSurveyDto | null>(null);
     const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: string | string[] }>({});
     const [roomError, setRoomError] = useState('');
-    const [submissionStatus, setSubmissionStatus] = useState('not submitted');
+    const [submissionStatus, setSubmissionStatus] = useState<boolean>(false);
     const [doesRoomExist, setDoesRoomExist] = useState(true);
 
     const [errorMessage, setErrorMessage] = useState('');
@@ -78,7 +78,7 @@ const SurveyRoom = () => {
         let deviceId = localStorage.getItem('device-id');
         if (!deviceId) {
           // If not, generate a new one and store it
-          deviceId = uuidv4();
+          deviceId = await getDeviceId();
           localStorage.setItem('device-id', deviceId);
         }
         
@@ -112,7 +112,7 @@ const SurveyRoom = () => {
     }, [doesRoomExist]);
 
     useEffect(() => {
-      if (submissionStatus === 'submitted') {
+      if (submissionStatus === true) {
         setTimeout(() => {
           navigate('/menu'); 
         }, 5000);
@@ -185,7 +185,7 @@ const SurveyRoom = () => {
         const response = await axios.post(`http://localhost:3000/surveys/${intSurveyId}/${roomId}/submit`, filledSurveyData,{ headers});
         console.log('Wypełniona ankieta została pomyślnie przesłana:', response.data);
         setErrorMessage('');
-        setSubmissionStatus('submitted');
+        setSubmissionStatus(true);
       } catch (error) {
         console.error('Błąd podczas przesyłania wypełnionej ankiety:', error);
         if ((error as any).response) {
@@ -207,7 +207,7 @@ const SurveyRoom = () => {
           <p>{roomError}</p>
         ) : (
         <div>
-        {submissionStatus === 'submitted' ? (
+        {submissionStatus === true ? (
           <p>Thanks for submitting the survey! You will be redirected to the menu in a few seconds.</p>
         ) : (
         survey && (

@@ -61,7 +61,7 @@ export default function Menu() {
       {/* Nested route for the createSurvey component */}
       <Route path="createSurvey" element={<CreateSurvey />} />
       <Route path="getSurvey" element={<GetSurvey />} />
-      <Route path="profile/:userNickName" element={<UserProfile />} />
+      <Route path="profile/:userNickName?" element={<UserProfile />} />
     </Routes>
   </div>
   );

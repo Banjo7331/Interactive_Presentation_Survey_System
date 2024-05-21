@@ -32,7 +32,8 @@ interface SurveyRoomResultDto {
 }
 
  const UserProfile = () => {
-  //const [user, setUser] = useState(null);
+  //const { userNickName } = useParams();
+
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [surveyResults, setSurveyResults] = useState<SurveyRoomResultDto[]>([]);
   
@@ -50,8 +51,8 @@ interface SurveyRoomResultDto {
   useEffect(() => {
     const fetchData = async () => {
         try {
-            if (!isAuthenticated) {
-                throw new Error('Token not found in localStorage');
+            if (!isAuthenticated ) {
+                navigate('/');
             }
             //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
             const headers = { Authorization: `Bearer ${token}` };
@@ -71,7 +72,6 @@ interface SurveyRoomResultDto {
       };
 
     fetchData();
-    // Replace with your actual API endpoint
     
   }, []);
 
