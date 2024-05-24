@@ -85,10 +85,10 @@ export class SurveyController {
     return submittedSurvey;
   }
   @UseGuards(JwtAuthGuard)
-  @Post(':id/create-room')
-  async createRoom(@Param('id') surveyId: string, @Body() surveyData: any,@Request() req) {
+  @Post(':id/:maxUsers/create-room')
+  async createRoom(@Param('id') surveyId: string,@Param('maxUsers') maxUsers: number, @Body() surveyData: any,@Request() req) {
     const userId = req.user.id;
-    const roomId = await this.roomService.createRoom(surveyId, surveyData, userId);
+    const roomId = await this.roomService.createRoom(surveyId, surveyData, userId, maxUsers);
     this.surveyGateway.server.emit('roomCreation', { roomId, userId });
     return { roomId, userId };
   }
@@ -112,7 +112,7 @@ export class SurveyController {
 
     // Get the room
     const room = this.roomService.getRoomById(roomId);
-
+    console.log(room);
     if (!room) {
       throw new NotFoundException(`Room with ID ${roomId} not found`);
     }
@@ -122,6 +122,9 @@ export class SurveyController {
     // Check if the participant has already submitted their survey
     if (room.submissions.has(deviceId)) {
       throw new HttpException('You have already submitted your survey and cannot rejoin the room', HttpStatus.FORBIDDEN);
+    }
+    if (room.participants.size >= room.maxUsers) {
+      throw new HttpException('The room is full and cannot accept more participants', HttpStatus.FORBIDDEN);
     }
     this.roomService.joinRoom(roomId, deviceId);
     this.surveyGateway.server.emit('userJoined');

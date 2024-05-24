@@ -44,7 +44,7 @@ function VerifyEmailPage() {
           <div>
             <p>Email verification successful!</p>
             <div className="d-flex justify-content-center">
-              <button className="btn btn-primary" onClick={() => window.location.href='http://localhost:5173/'}>Continue</button>
+              <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => window.location.href='http://localhost:5173/'}>Continue</button>
             </div>
           </div>
         );

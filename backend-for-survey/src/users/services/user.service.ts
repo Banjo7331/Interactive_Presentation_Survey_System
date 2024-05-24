@@ -4,9 +4,8 @@ import { User } from "src/typeorm/entities/userElm/User";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
 import * as bcrypt from 'bcrypt'
-import { CreateSurveyDto } from "src/surveys/dtos/CreateSurvey.dto";
-import { Survey } from "src/typeorm/entities/surveyElm/Survey";
-import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
+
+
 @Injectable()
 export class UserService {
   constructor(
@@ -40,7 +39,19 @@ export class UserService {
   async updateUser(user: User): Promise<User> {
     return await this.userRepository.save(user);
   }
-  async updatePassword(id: number, newPassword: string): Promise<void> {
+  async updatePassword(id: number, oldPassword: string,newPassword: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({id});
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isOldPasswordCorrect = bcrypt.compareSync(oldPassword, user.password);
+
+    if (!isOldPasswordCorrect) {
+      throw new Error('Old password is incorrect');
+    }
+
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     await this.userRepository.update(id, { password: hashedPassword });
   }

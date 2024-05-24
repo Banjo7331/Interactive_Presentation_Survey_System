@@ -1,14 +1,14 @@
 import { useEffect,  } from 'react'
 
-import Login from './components/Login'
+import Login from './pages/authorization/Login'
 import { BrowserRouter, Routes, Route, } from 'react-router-dom'
-import Signup from './components/Signup'
-import Menu from './components/Menu'
-import { useAuth } from './utils/IsLogged'
-import SurveyRoom from './components/SurveyRoom'
-import SurveyResultsPage from './components/SurveyRoomResults'
-import VerifyEmailPage from './components/VerifyEmail'
-import WaitingForVerificationPage from './components/WaitingForVerification'
+import Signup from './pages/authorization/Signup'
+import Menu from './pages/Menu'
+import { useAuth } from './utils/authorization/IsLogged'
+import SurveyRoom from './pages/live-survey/SurveyRoom'
+import SurveyResultsPage from './pages/live-survey/SurveyRoomResults'
+import VerifyEmailPage from './pages/verification/VerifyEmail'
+import WaitingForVerificationPage from './pages/verification/WaitingForVerification'
 
 function App() {
   const { login } = useAuth();
@@ -26,9 +26,9 @@ function App() {
   return(
       <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Login></Login>}></Route>
+        <Route path='/login/' element={<Login></Login>}></Route>
         <Route path='/signup/' element={<Signup></Signup>}></Route>
-        <Route path='/menu/*' element={<Menu></Menu>}></Route>
+        <Route path='/*' element={<Menu></Menu>}></Route>
         <Route path="/survey-room/:surveyId/:roomId" element={<SurveyRoom />} />
         <Route path="/survey-results/:userId/:surveyId/:roomId" element={<SurveyResultsPage/>} />
         <Route path="/verify-email" element={<VerifyEmailPage/>} />

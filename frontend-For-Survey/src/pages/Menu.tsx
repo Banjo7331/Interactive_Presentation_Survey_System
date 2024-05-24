@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import CreateSurvey from './CreateSurvey';
-import GetSurvey from './GetSurvey';
-import { useAuth } from '../utils/IsLogged';
-import ProfileButton from '../services/ProfilleButton';
-import UserProfile from './UserProfile';
+import CreateSurvey from './survey-activities/CreateSurvey';
+import GetSurvey from './survey-activities/GetSurvey';
+import { useAuth } from '../utils/authorization/IsLogged';
+import ProfileButton from '../components/user/ProfilleButton';
+import UserProfile from './user/UserProfile';
 import axios from 'axios';
 
 export default function Menu() {
@@ -31,18 +31,18 @@ export default function Menu() {
   
   const handleCreateSurveyClick = () => {
     if (isAuthenticated) {
-      navigate('/menu/createSurvey');
+      navigate('/createSurvey');
     } else {
       // Redirect to the login page
-      navigate('/');
+      navigate('/login');
     }
   };
   const handleChooseSurveyClick = () => {
     if (isAuthenticated) {
-      navigate('/menu/getSurvey');
+      navigate('/getSurvey');
     } else {
       // Redirect to the login page
-      navigate('/');
+      navigate('/login');
     }
   };
 
@@ -51,8 +51,8 @@ export default function Menu() {
    <nav className="navbar navbar-expand-lg navbar-light bg-light">
     <div className="container-fluid d-flex justify-content-between">
       <div className="btn-group" role="group" aria-label="Basic example">
-        <button onClick={handleCreateSurveyClick} className="btn btn-primary me-2">Create Survey</button>
-        <button onClick={handleChooseSurveyClick} className="btn btn-primary me-2">Find Survey</button>
+        <button onClick={handleCreateSurveyClick} className="px-4 py-2 bg-blue-500 text-white rounded">Create Survey</button>
+        <button onClick={handleChooseSurveyClick} className="px-4 py-2 bg-blue-500 text-white rounded">Find Survey</button>
       </div>
       <ProfileButton nickname={nickname} />
     </div>

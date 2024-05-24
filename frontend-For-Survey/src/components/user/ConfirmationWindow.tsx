@@ -20,7 +20,7 @@ const ConfirmationWindow: FC<ConfirmationWindowProps> = ({ show, handleConfirm, 
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancel</button>
-              <button type="button" className="btn btn-primary" onClick={handleConfirm}>Confirm</button>
+              <button type="button" className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleConfirm}>Confirm</button>
             </div>
           </div>
         </div>

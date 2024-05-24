@@ -1,45 +1,20 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../utils/IsLogged';
-import { roomExists } from '../utils/roomExists';
-import { getDeviceId } from '../utils/getDeviceId';
-import RoomErrorPage from '../services/RoomErrorPage';
-import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '../../utils/authorization/IsLogged';
+import { roomExists } from '../../utils/live-survey/roomExists';
+import { getDeviceId } from '../../utils/getDeviceId';
+import RoomErrorPage from '../../components/RoomErrorPage';
+import { QuestionType } from '../../entities/survey-activities/enums/question-type.enum';
+import { Survey } from '../../entities/survey-activities/survey.entity';
+import { FilledSurveyDto, UserChoiceDto } from '../../entities/live-survey/filled-survey/filledSurvey.DTO';
 
-interface Survey {
-    id: number;
-    title: string;
-    questions: QuestionDto[];
-}
-  
-interface QuestionDto {
-    id: number;
-    title: string;
-    type: string;
-    possibleChoices: string[];
-}
 
-interface SubmitSurveyDto {
-    name: string; // Name of the filled survey
-    surveyId: number; // ID of the survey being filled
-    userChoices: UserChoiceDto[]; // Array of user choices for each question
-  }
-  
-  interface UserChoiceDto {
-    questionId: number; // ID of the question
-    answer: string[]; // Array of answers chosen by the user (for multiple-choice questions)
-  }
-  enum QuestionType {
-    MULTIPLE_CHOICE = 'multiple-correct-answer',
-    ONE_CHOICE = 'single-correct-answer',
-    TEXT = 'text-answer',
-  }
 const SurveyRoom = () => {
     const { surveyId, roomId } = useParams();
     const intSurveyId = parseInt(surveyId!);
     const [survey, setSurvey] = useState<Survey | null>(null);
-    const [filledSurvey, setFilledSurvey] = useState<SubmitSurveyDto | null>(null);
+    const [filledSurvey, setFilledSurvey] = useState<FilledSurveyDto | null>(null);
     const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: string | string[] }>({});
     const [roomError, setRoomError] = useState('');
     const [submissionStatus, setSubmissionStatus] = useState<boolean>(false);
@@ -95,6 +70,9 @@ const SurveyRoom = () => {
           if (error.response && error.response.status === 404) {
             setRoomError(`Room with ID ${roomId} not found`);
           }
+          else if (error.response && error.response.status === 403) {
+            setRoomError(`There is maximum nubmer of users alraedy in room with ID ${roomId}`);
+          }
         }
       };
       async function loadRoom() {
@@ -114,7 +92,7 @@ const SurveyRoom = () => {
     useEffect(() => {
       if (submissionStatus === true) {
         setTimeout(() => {
-          navigate('/menu'); 
+          navigate('/'); 
         }, 5000);
       }
     }, [submissionStatus]);
@@ -161,7 +139,7 @@ const SurveyRoom = () => {
         };
       });
     
-      const filledSurveyData: SubmitSurveyDto = {
+      const filledSurveyData: FilledSurveyDto = {
         name: 'Filled Survey', 
         surveyId: intSurveyId,
         userChoices: userChoices
@@ -174,7 +152,7 @@ const SurveyRoom = () => {
         let deviceId = localStorage.getItem('device-id');
         if (!deviceId) {
           // If not, generate a new one and store it
-          deviceId = uuidv4();
+          deviceId = await getDeviceId();
           localStorage.setItem('device-id', deviceId);
         }
         

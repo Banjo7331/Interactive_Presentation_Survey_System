@@ -25,7 +25,7 @@ function WaitingForVerificationPage() {
 
   useEffect(() => {
     if (isVerified) {
-      navigate('/');
+      navigate('/login');
     }
   }, [isVerified, navigate]);
 

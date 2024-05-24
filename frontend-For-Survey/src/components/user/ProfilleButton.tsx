@@ -12,12 +12,12 @@ function ProfileButton({ nickname }: { nickname: string }) {
     // Remove the token from cookies
     document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     // Redirect the user to the login page
-    navigate('/');
+    navigate('/login');
   };
 
   return (
     <>
-      <button type="button" className="btn btn-primary" onClick={handleShow}>
+      <button type="button" className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleShow}>
         {nickname}
       </button>
 
@@ -29,7 +29,7 @@ function ProfileButton({ nickname }: { nickname: string }) {
               <button type="button" className="btn-close" onClick={handleClose}></button>
             </div>
             <div className="modal-body">
-                <Link to={`/menu/profile/${nickname}`} className="btn btn-primary">Go to Profile</Link>
+                <Link to={`/profile/${nickname}`} className="btn btn-secondary">Go to Profile</Link>
                 <button onClick={handleLogout} className="btn btn-danger">Logout</button>
             </div>
             <div className="modal-footer">

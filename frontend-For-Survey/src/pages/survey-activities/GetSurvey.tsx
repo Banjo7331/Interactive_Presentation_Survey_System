@@ -1,37 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/IsLogged';
+import { useAuth } from '../../utils/authorization/IsLogged';
+import { Survey } from '../../entities/survey-activities/survey.entity';
 
-interface QuestionDto {
-  title: string;
-  type: string;
-  possibleChoices: string[];
-}
-
-interface SurveyDto {
-  id: number;
-  title: string;
-  questions: QuestionDto[];
-}
 
 export default function GetSurvey() {
-  const [survey, setSurvey] = useState<SurveyDto | null>(null);
-  const [surveyId, setSurveyId] = useState<number | null>(null); // ID ankiety, którą chcesz pobrać
+  const [survey, setSurvey] = useState<Survey | null>(null);
+  const [surveyId, setSurveyId] = useState<string | null>(null); // ID ankiety, którą chcesz pobrać
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState<Object>({});
   
   const [error, setError] = useState<string | null>(null);
-  const [surveys, setSurveys] = useState<SurveyDto[]>([]);
+  const [surveys, setSurveys] = useState<Survey[]>([]);
   const [surveyName, setSurveyName] = useState('');
   const [surveyNameInput, setSurveyNameInput] = useState('');
+  
+
+  const [showInputForMaxUsers, setShowInputForMaxUsers] = useState<boolean>(false);
+  const [maxUsers, setMaxUsers] = useState<number>(50);
 
   const { isAuthenticated, token } = useAuth();
   useEffect(() => {
     const fetchSurveys = async () => {
       try {
         if (!isAuthenticated) {
-          navigate('/');
+          navigate('/login');
         }else{
           //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
           const headers = { Authorization: `Bearer ${token}` };
@@ -42,13 +36,13 @@ export default function GetSurvey() {
             console.log(response);
             setSurveys(response.data);
 
-            const survey = response.data.find((survey: any) => survey.title === surveyName);
+            const survey = response.data.find((survey: any) => {
+              return survey.title === surveyName && (surveyId ? survey.id === surveyId : true);
+            });
             setSurvey(survey);
-            if (survey) {
+            if (survey && !surveyId) {
               setSurveyId(survey.id);
               console.log("Survey Id"+survey.id);
-            } else {
-              setSurveyId(null); // set to null if no survey found
             }
           }
         }
@@ -58,7 +52,7 @@ export default function GetSurvey() {
     };
   
     fetchSurveys();
-  }, [surveyName]);
+  }, [surveyName,surveyId]);
 
   const handleInputChang2e = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSurveyName(event.target.value);
@@ -66,9 +60,11 @@ export default function GetSurvey() {
     console.log(surveyName);
   };
 
-  const handleSurveyClick = (id: number, title: string) => {
+  const handleSurveyClick = (id: string, title: string) => {
     setSurveyNameInput(title);
     setSurveyId(id);
+    console.log(id);
+    setSurveyName(title);
   };
   //const [roomCreated, setRoomCreated] = useState(false);
 
@@ -87,7 +83,7 @@ export default function GetSurvey() {
       // console.log('Token:', tokenCookie)
       const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
-      const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/create-room`,{},{ headers });
+      const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/${maxUsers}/create-room`,{},{ headers });
       console.log("trolololo"+response.data)
       const roomId2 = response.data.roomId;
       const userId = response.data.userId;
@@ -105,22 +101,17 @@ export default function GetSurvey() {
 
   return (
     <div>
-      {/*
-      <form onSubmit={handleSubmit}>
-        <label>
-          Enter Survey ID:
-          <input type="number" value={surveyId} onChange={handleInputChange} />
-        </label>
-        <button type="submit">Open survey</button>
-      </form>
-      */}
-       <form onSubmit={handleSubmit}>
-        <label>
+      <label>
           Enter Survey Name:
           <input type="text" value={surveyNameInput} onChange={handleInputChang2e} />
-        </label>
-        <button type="submit">Open Room</button>
-      </form>
+      </label>
+      <button type="button" className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => setShowInputForMaxUsers(true)}>Open Room</button>
+      {showInputForMaxUsers && (
+        <form onSubmit={handleSubmit}>
+          <input type="number" min="1" max="50" value={maxUsers} onChange={(e) => setMaxUsers(Number(e.target.value))} />
+          <button type="submit">Submit</button>
+        </form>
+      )}
       {error && <div className="alert alert-danger">{error}</div>}
       {surveys && surveys.map((survey, index) => (
         <div key={index}>
@@ -128,22 +119,20 @@ export default function GetSurvey() {
         </div>
       ))}
       {survey && (
-        <>
-          <h2>{survey.title}</h2>
-          <p>ID: {survey.id}</p>
-          <h3>Questions:</h3>
-          <ul>
+        <div className="flex justify-between items-center space-y-5">
+          <div className="flex flex-col items-center text-center mt-5 p-5 border-2 border-gray-300 rounded-lg shadow-lg">
+            <h3 className="mb-4">Preview</h3>
             {survey.questions && survey.questions.map((question, index) => (
-              <li key={index}>
+              <div key={index} className={`w-1/3 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto mr-5' : 'mr-auto ml-5'}`}>
                 <p>{question.title}</p>
                 <p>Type: {question.type}</p>
                 {question.possibleChoices && (
                   <p>Possible Choices: {question.possibleChoices.join(', ')}</p>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
-        </>
+          </div>
+        </div>
       )}
     </div>
   );

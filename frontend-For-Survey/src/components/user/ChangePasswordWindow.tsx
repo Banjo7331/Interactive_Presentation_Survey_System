@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '../utils/IsLogged';
+import { useAuth } from '../../utils/authorization/IsLogged';
 
 interface ChangePasswordWindowProps {
   show: boolean;
@@ -11,6 +11,7 @@ const ChangePasswordWindow: React.FC<ChangePasswordWindowProps> = ({ show, handl
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   const { isAuthenticated,token } = useAuth();
   const handleSubmit = async () => {
@@ -23,14 +24,21 @@ const ChangePasswordWindow: React.FC<ChangePasswordWindowProps> = ({ show, handl
       return;
     }
 
+    if (newPassword.length < 8 || newPassword.length > 25) {
+      setPasswordError('Password must be between 8 and 25 characters');
+      return;
+    }
+
     try {
-      await axios.put(`http://localhost:3000/users/password`, { newPassword }, { headers });
+      await axios.put(`http://localhost:3000/users/password`, { oldPassword, newPassword }, { headers });
       alert('Password changed successfully');
       handleClose();
     } catch (error) {
       alert('Failed to change password');
     }
   };
+
+  const isFormValid = oldPassword && newPassword && confirmNewPassword;
 
   return (
     <div className={`modal ${show ? 'd-block' : 'd-none'}`}>
@@ -49,6 +57,7 @@ const ChangePasswordWindow: React.FC<ChangePasswordWindowProps> = ({ show, handl
               <div className="mb-3">
                 <label className="form-label">New Password</label>
                 <input type="password" className="form-control" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                {passwordError && <div className="text-danger">{passwordError}</div>}
               </div>
               <div className="mb-3">
                 <label className="form-label">Confirm New Password</label>
@@ -57,7 +66,7 @@ const ChangePasswordWindow: React.FC<ChangePasswordWindowProps> = ({ show, handl
             </form>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-primary" onClick={handleSubmit}>Save changes</button>
+            <button type="button" className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleSubmit} disabled={!isFormValid}>Save changes</button>
           </div>
         </div>
       </div>

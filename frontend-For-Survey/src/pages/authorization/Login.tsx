@@ -26,7 +26,7 @@ export default function Login() {
 
               console.log('Token set as cookie:', token);
               console.log(res.data);
-              navigate('/menu');
+              navigate('/');
           } else {
               console.log('Token not found in response data.');
           }
@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className='d-flex justify-content-center align-items-center bg-primary vh-100'>
+    <div className='d-flex justify-content-center align-items-center bg-secondary vh-100'>
         <div className='bg-white p-3 rounded w-25'>
             <h2>Sign-In</h2>
             <form action='' onSubmit={handleSubmit}>

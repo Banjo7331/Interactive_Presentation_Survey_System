@@ -28,12 +28,13 @@ export class SurveyRoomService {
     
   }
 
-  createRoom(surveyId: string, surveyData: any,creatorId: string): SurveyRoom {
+  createRoom(surveyId: string, surveyData: any,creatorId: string,maxUsers: number): SurveyRoom {
     const roomId = uuidv4();
     const link = `https://localhost:5731/survey-room/${surveyId}/${roomId}`;
     const room: SurveyRoom = {
       id: roomId,
       link: link,
+      maxUsers: maxUsers,
       surveyId,
       surveyData,
       participants: new Set(),

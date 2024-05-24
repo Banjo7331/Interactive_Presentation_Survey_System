@@ -1,44 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import axios from 'axios'; // Assuming you're using axios for HTTP requests
-import { useAuth } from '../utils/IsLogged';
-import ConfirmationWindow from '../services/ConfirmationWindow';
-import ChangePasswordWindow from '../services/ChangePasswordWindow';
-// Interfaces
-interface QuestionDto {
-  id: number;
-  title: string;
-  type: string;
-  possibleChoices: string[];
-}
+import { useAuth } from '../../utils/authorization/IsLogged';
+import ConfirmationWindow from '../../components/user/ConfirmationWindow';
+import ChangePasswordWindow from '../../components/user/ChangePasswordWindow';
+import { Survey } from '../../entities/survey-activities/survey.entity';
+import { SurveyRoomResult } from '../../entities/live-survey/room/roomResult.entity';
 
-interface Survey {
-  id: string;
-  title: string;
-  questions: QuestionDto[];
-}
-
-interface QuestionRoomResultDto {
-  id: string;
-  question: QuestionDto;
-  answer: string[][];
-}
-
-interface SurveyRoomResultDto {
-  id: string;
-  surveyId: string;
-  questionRoomResult: QuestionRoomResultDto[];
-  room: string;
-}
 
  const UserProfile = () => {
   //const { userNickName } = useParams();
 
   const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [surveyResults, setSurveyResults] = useState<SurveyRoomResultDto[]>([]);
+  const [surveyResults, setSurveyResults] = useState<SurveyRoomResult[]>([]);
   
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
-  const [selectedResult, setSelectedResult] = useState<SurveyRoomResultDto | null>(null);
+  const [selectedResult, setSelectedResult] = useState<SurveyRoomResult | null>(null);
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -52,7 +29,7 @@ interface SurveyRoomResultDto {
     const fetchData = async () => {
         try {
             if (!isAuthenticated ) {
-                navigate('/');
+                navigate('/login');
             }
             //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
             const headers = { Authorization: `Bearer ${token}` };
@@ -78,7 +55,7 @@ interface SurveyRoomResultDto {
   const handleSurveyClick = (survey: Survey) =>{
     setSelectedSurvey(survey);
   }
-  const handleResultClick = (result: SurveyRoomResultDto) =>{
+  const handleResultClick = (result: SurveyRoomResult) =>{
     setSelectedResult(result);
   }
   const handleOpenChangePasswordModal = () => {
@@ -135,83 +112,88 @@ interface SurveyRoomResultDto {
     };
     const handleGoBackMenuClick = () => {
       if (isAuthenticated) {
-        navigate('/menu');
+        navigate('/');
       } else {
         // Redirect to the login page
-        navigate('/');
+        navigate('/login');
       }
     };
-  return (
-    <>
-    <ConfirmationWindow show={showConfirmation} handleConfirm={handleConfirmDelete} handleCancel={handleCancelDelete} />
+    return (
+      <>
+        <ConfirmationWindow show={showConfirmation} handleConfirm={handleConfirmDelete} handleCancel={handleCancelDelete} />
+        <ChangePasswordWindow
+          show={showChangePasswordModal}
+          handleClose={handleCloseChangePasswordModal}
+        />
+        <div className="d-flex justify-content-between p-2">
+          <button onClick={handleGoBackMenuClick} className="px-4 py-2 bg-blue-500 text-white rounded">Menu</button>
+          <button onClick={handleOpenChangePasswordModal} className="px-4 py-2 bg-blue-500 text-white rounded">Change Password</button>
+        </div>
+        <div className="row  mt-5">
+          <div className="col">
+            <h2>Surveys</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Details</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {surveys && surveys.map(survey => (
+                  <tr key={survey.id} onClick={() => handleSurveyClick(survey)}>
+                    <td>{survey.title}</td>
+                    <td>
+                      {selectedSurvey === survey && selectedSurvey.questions && selectedSurvey.questions.map(question => (
+                        <div key={question.id}>
+                          <h4>{question.title}</h4>
+                          <p>Type: {question.type}</p>
+                          <p>Possible Choices: {question.possibleChoices.join(', ')}</p>
+                        </div>
+                      ))}
+                    </td>
+                    <td>
+                      <button onClick={() => handleDeleteSurvey(survey.id)} className="btn btn-danger">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
     
-    <ChangePasswordWindow
-      show={showChangePasswordModal}
-      handleClose={handleCloseChangePasswordModal}
-    />
-    <div className="d-flex justify-content-between p-2">
-      <button onClick={handleGoBackMenuClick} className="btn btn-primary">Menu</button>
-      <button onClick={handleOpenChangePasswordModal} className="btn btn-primary">Change Password</button>
-    </div>
-    <div className="row  mt-5">
-      <div className="col">
-        <h2>Surveys</h2>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {surveys && surveys.map(survey => (
-              <tr key={survey.id} onClick={() => handleSurveyClick(survey)}>
-                <td>{survey.title}</td>
-                <td>
-                  {selectedSurvey === survey && selectedSurvey.questions && selectedSurvey.questions.map(question => (
-                    <div key={question.id}>
-                      <h4>{question.title}</h4>
-                      <p>Type: {question.type}</p>
-                      <p>Possible Choices: {question.possibleChoices.join(', ')}</p>
-                    </div>
-                  ))}
-                </td>
-                <button onClick={() => handleDeleteSurvey(survey.id)} className="btn btn-danger">Delete</button>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="col">
-        <h2>Survey Results</h2>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Result</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {surveyResults && surveyResults.map(result => (
-              <tr key={result.id} onClick={() => handleResultClick(result)}>
-                <td>Survey Result {result.id}</td>
-                <td>
-                  {selectedResult === result && selectedResult.questionRoomResult && selectedResult.questionRoomResult.map(questionResult => (
-                    <div key={questionResult.id}>
-                      <p>Answer: {questionResult.answer.join(', ')}</p>
-                    </div>
-                  ))}
-                </td>
-                <button onClick={() => handleDeleteSurveyRoomResult(result.id)} className="btn btn-danger">Delete</button>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    </>
-  );
+          <div className="col">
+            <h2>Survey Results</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Result</th>
+                  <th>Details</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {surveyResults && surveyResults.map(result => (
+                  <tr key={result.id} onClick={() => handleResultClick(result)}>
+                    <td>Survey Result {result.id}</td>
+                    <td>
+                      {selectedResult === result && selectedResult.questionRoomResult && selectedResult.questionRoomResult.map(questionResult => (
+                        <div key={questionResult.id}>
+                          <p>Answer: {questionResult.answer.join(', ')}</p>
+                        </div>
+                      ))}
+                    </td>
+                    <td>
+                      <button onClick={() => handleDeleteSurveyRoomResult(result.id)} className="btn btn-danger">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    );
 };
 
 export default UserProfile;

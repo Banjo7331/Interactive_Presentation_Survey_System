@@ -4,47 +4,14 @@ import io, { Socket } from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
-//import { aggregateData } from '../utils/agregateData';
-import { useAuth } from '../utils/IsLogged';
+import { useAuth } from '../../utils/authorization/IsLogged';
 import QRCode from 'qrcode.react';
-import { roomExists } from '../utils/roomExists';
-import RoomErrorPage from '../services/RoomErrorPage';
+import { roomExists } from '../../utils/live-survey/roomExists';
+import RoomErrorPage from '../../components/RoomErrorPage';
+import { Survey } from '../../entities/survey-activities/survey.entity';
+import { FilledSurvey} from '../../entities/live-survey/filled-survey/filledSurvey.entity';
+import { QuestionRoomResultDto, SurveyRoomResultDto } from '../../entities/live-survey/room/roomResult.DTO';
 
-
-interface UserChoice {
-  answer: any[]; // Replace 'any' with the actual type of the elements in the 'answer' array
-}
-
-interface Survey {
-  id: string;
-  title: string;
-  questions: QuestionDto[];
-}
-
-interface QuestionDto {
-  id: number;
-  title: string;
-  type: string;
-  possibleChoices: string[];
-}
-
-interface FilledSurvey {
-  name: string;
-  userChoices: UserChoice[];
-  survey: Survey;
-  user: any; // Replace 'any' with the actual type of the 'user' property
-}
-
-interface QuestionRoomResultDto {
-  title: string;
-  type: string;
-  question: QuestionDto;
-  answer: string[][];
-}
-
-interface SurveyRoomResultDto {
-  questionRoomResultDto: QuestionRoomResultDto[];
-}
 
 const SurveyResultsPage = () => {
   const [surveyResults, setSurveyResults] = useState<FilledSurvey[]>([]);
@@ -213,7 +180,7 @@ const SurveyResultsPage = () => {
         headers,
         data: surveyResultsDto
       });
-      navigate('/menu');
+      navigate('/');
       
     } catch (error) {
       console.error('Error deleting room:', error);

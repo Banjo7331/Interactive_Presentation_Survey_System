@@ -29,7 +29,7 @@ export default function Signup() {
         });
       };
     return (
-        <div className='d-flex justify-content-center align-items-center bg-primary vh-100'>
+        <div className='d-flex justify-content-center align-items-center bg-secondary vh-100'>
             <div className='bg-white p-3 rounded w-25'>
                 <h2>Sign-Up</h2>
                 <form action='' onSubmit={handleSubmit}>
@@ -50,7 +50,7 @@ export default function Signup() {
                     </div>
                     <button className='btn btn-success w-100 rounded-0'>Sign up</button>
                     <p>You are agree to terms and policies</p>
-                    <Link to="/"className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none'>Login</Link>
+                    <Link to="/login"className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none'>Login</Link>
                 </form>
                 {errorMessage && <p>{errorMessage}</p>}
             </div>
