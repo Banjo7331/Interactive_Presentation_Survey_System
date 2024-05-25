@@ -107,15 +107,36 @@ const SurveyResultsPage = () => {
     loadRoom();
   }, [isAuthenticated, roomId, token]);
 
+  const [isHovered, setIsHovered] = useState<{ questionIndex: number, answerIndex: number } | null>(null);
+
   const charts = survey?.questions.map((question, index) => {
     if (question.type === 'text-answer') {
       // For text questions, just display the answers
       const textAnswers = surveyResults.map(surveyResult => surveyResult.userChoices[index].answer);
       return (
-        <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
+        <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
           <div className="w-1/2">
             <h3>{question.title}</h3>
-            {textAnswers.map((answer, i) => <p key={i}>{answer}</p>)}
+            <div className="flex flex-row flex-wrap justify-center">
+            {textAnswers.map((answer, i) => (
+              <div 
+                key={i} 
+                className={`m-2 p-2 border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out`}
+                style={{ 
+                  transform: isHovered?.questionIndex === index && isHovered?.answerIndex === i ? 'scale(1.05)' : 'scale(1)', 
+                  width: '150px', // adjust this value as needed
+                  height: '150px', // make it a square
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={() => setIsHovered({ questionIndex: index, answerIndex: i })}
+                onMouseLeave={() => setIsHovered(null)}
+              >
+                <p style={{ display: isHovered?.questionIndex === index && isHovered?.answerIndex === i ? 'block' : 'none' }}>{answer}</p>
+              </div>
+            ))}
+            </div>
           </div>
         </div>
       );
