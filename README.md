@@ -14,7 +14,7 @@ The Interactive Survey Management App is designed for creating, managing, and sh
 ## Usage
 
 1. **Sign up or log in** to your account.
-   ![Sign Up or Log In](doc-pics/login.png)
+   ![Sign Up or Log In](doc-pics/lohin.png)
    
 2. **Create a new survey** by adding questions and answer options.
    ![Create Survey](doc-pics/create.png)
