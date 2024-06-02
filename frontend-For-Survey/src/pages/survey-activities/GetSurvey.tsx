@@ -7,7 +7,7 @@ import { Survey } from '../../entities/survey-activities/survey.entity';
 
 export default function GetSurvey() {
   const [survey, setSurvey] = useState<Survey | null>(null);
-  const [surveyId, setSurveyId] = useState<string | null>(null); // ID ankiety, którą chcesz pobrać
+  const [surveyId, setSurveyId] = useState<string | null>(null); 
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState<Object>({});
   
@@ -27,7 +27,6 @@ export default function GetSurvey() {
         if (!isAuthenticated) {
           navigate('/login');
         }else{
-          //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1];
           const headers = { Authorization: `Bearer ${token}` };
           console.log('Request headers:', headers);
           
@@ -66,7 +65,6 @@ export default function GetSurvey() {
     console.log(id);
     setSurveyName(title);
   };
-  //const [roomCreated, setRoomCreated] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,8 +77,6 @@ export default function GetSurvey() {
         throw new Error('Token not found in localStorage');
       }
       console.log('Survey ID:', surveyId);
-      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
-      // console.log('Token:', tokenCookie)
       const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
       const response = await axios.post(`http://localhost:3000/surveys/${surveyId}/${maxUsers}/create-room`,{},{ headers });
@@ -92,8 +88,7 @@ export default function GetSurvey() {
       console.log('Survey room created:', response.data);
       console.log('Room ID:', roomId2);
       console.log('Room ID in useState:', roomId);
-      //setRoomCreated(true);
-      navigate(`/survey-results/${userId}/${surveyId}/${roomId2}`); // Use both surveyId and roomId in the URL
+      navigate(`/survey-results/${userId}/${surveyId}/${roomId2}`); 
     } catch (error) {
       console.error('Error creating survey room:', error);
     }

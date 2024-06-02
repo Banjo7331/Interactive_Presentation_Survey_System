@@ -15,9 +15,7 @@ import { QuestionRoomResultDto, SurveyRoomResultDto } from '../../entities/live-
 
 const SurveyResultsPage = () => {
   const [surveyResults, setSurveyResults] = useState<FilledSurvey[]>([]);
-  //const [data, setData] = useState<Record<string, Record<string, number>> | null>(null);
   const { userId,surveyId, roomId } = useParams();
-  //const [ws, setWS] = React.useState<Socket | null>(null)
   const wsRef = React.useRef<Socket | null>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
 
@@ -30,14 +28,12 @@ const SurveyResultsPage = () => {
   
   const { isAuthenticated, token } = useAuth();
   useEffect(() => {
-    // Establish WebSocket connection
     const fetchSurvey = async () => {
       if (!surveyId) return;
       try {
         if (!isAuthenticated) {
             navigate('/');
         }
-        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
         const headers = { Authorization: `Bearer ${token}` };
         console.log('Request headers:', headers);
         const response = await axios.get(`http://localhost:3000/surveys/${surveyId}`,{ headers });
@@ -56,7 +52,6 @@ const SurveyResultsPage = () => {
         socket.emit('roomCreation', { roomId, userId });
         setRoomCreated(true);
       }
-      // Event listeners for WebSocket events
       socket.on('connect', () => {
         console.log('Connected to WebSocket server');
       });
@@ -65,21 +60,13 @@ const SurveyResultsPage = () => {
         console.log('Disconnected from WebSocket server');
       });
       socket.on('roomCreation', async ({ roomId, userId }) => {
-        // Update room ID and user ID when a new room is created
         console.log(`Room created: ${roomId} by user: ${userId}`);
-        // Update your state here
       });
       socket.on('userJoined', async () => {
-        // Update joined count when a new user joins the room
-        console.log("aha");
-        setJoinedCount(prevCount => prevCount + 1); // Add this line
+        setJoinedCount(prevCount => prevCount + 1); 
       });
       socket.on('surveySubmitted', async (submittedData) => {
-        // Update survey results when a new survey is submitted
-        console.log("gites")
         setSurveyResults(prevSurveyResults => [...prevSurveyResults, submittedData])
-        //const aggregatedData = aggregateData(surveyResults);
-        //setData(aggregatedData);
         setSubmittedUserCount(prevCount => prevCount + 1);
       });
       wsRef.current = socket;
@@ -87,8 +74,7 @@ const SurveyResultsPage = () => {
     return () => {
       if (wsRef.current) {
         wsRef.current.disconnect();
-        wsRef.current = null; // Reset the ref after disconnecting
-        console.log("ojejejejejejej")
+        wsRef.current = null; 
       }
       
     };
@@ -107,47 +93,68 @@ const SurveyResultsPage = () => {
     loadRoom();
   }, [isAuthenticated, roomId, token]);
 
+  const [currentAnswerIndices, setCurrentAnswerIndices] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (survey) {
+      setCurrentAnswerIndices(new Array(survey.questions.length).fill(0));
+    }
+  }, [survey]);
+
+  const handleNext = (questionIndex: number) => {
+    setCurrentAnswerIndices(prevIndices => {
+      const newIndices = [...prevIndices];
+      newIndices[questionIndex]++;
+      return newIndices;
+    });
+  };
+
+  const handlePrev = (questionIndex: number) => {
+    setCurrentAnswerIndices(prevIndices => {
+      const newIndices = [...prevIndices];
+      newIndices[questionIndex]--;
+      return newIndices;
+    });
+  };
+
   const [isHovered, setIsHovered] = useState<{ questionIndex: number, answerIndex: number } | null>(null);
+  const colors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#3F51B5', '#546E7A', '#D4526E', '#8D5B4C', '#F86624', '#D7263D', '#1B998B', '#2E294E', '#F46036', '#E2C044'];
 
   const charts = survey?.questions.map((question, index) => {
     if (question.type === 'text-answer') {
-      // For text questions, just display the answers
       const textAnswers = surveyResults.map(surveyResult => surveyResult.userChoices[index].answer);
       return (
         <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
           <div className="w-1/2">
             <h3>{question.title}</h3>
             <div className="flex flex-row flex-wrap justify-center">
-            {textAnswers.map((answer, i) => (
+              <button onClick={() => handlePrev(index)} disabled={currentAnswerIndices[index] === 0}>←</button>
               <div 
-                key={i} 
                 className={`m-2 p-2 border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out`}
                 style={{ 
-                  transform: isHovered?.questionIndex === index && isHovered?.answerIndex === i ? 'scale(1.05)' : 'scale(1)', 
-                  width: '150px', // adjust this value as needed
-                  height: '150px', // make it a square
+                  transform: isHovered?.questionIndex === index && isHovered?.answerIndex === currentAnswerIndices[index] ? 'scale(1.05)' : 'scale(1)', 
+                  width: '150px', 
+                  height: '150px', 
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
-                onMouseEnter={() => setIsHovered({ questionIndex: index, answerIndex: i })}
+                onMouseEnter={() => setIsHovered({ questionIndex: index, answerIndex: currentAnswerIndices[index] })}
                 onMouseLeave={() => setIsHovered(null)}
               >
-                <p style={{ display: isHovered?.questionIndex === index && isHovered?.answerIndex === i ? 'block' : 'none' }}>{answer}</p>
+                <p style={{ display: isHovered?.questionIndex === index && isHovered?.answerIndex === currentAnswerIndices[index] ? 'block' : 'none' }}>{textAnswers[currentAnswerIndices[index]]}</p>
               </div>
-            ))}
+              <button onClick={() => handleNext(index)} disabled={currentAnswerIndices[index] === textAnswers.length - 1}>→</button>
             </div>
           </div>
         </div>
       );
     } else {
-      // For multiple choice and one choice questions, display a chart
       const choiceCounts = question.possibleChoices.reduce((counts, choice) => {
         counts[choice] = 0;
         return counts;
       }, {} as Record<string, number>);
   
-      // Count the number of times each choice was selected
       surveyResults.forEach(surveyResult => {
         const answer = surveyResult.userChoices[index].answer;
         if (Array.isArray(answer)) {
@@ -165,6 +172,7 @@ const SurveyResultsPage = () => {
         chart: {
           type: 'bar' as const,
         },
+        colors: [colors[index % colors.length]],
         series: [{
           data: Object.entries(choiceCounts).map(([choice, count]) => ({ x: choice, y: count }))
         }],
@@ -194,7 +202,6 @@ const SurveyResultsPage = () => {
       }
       const surveyResultsDto = filledSurveysToDto(surveyResults, survey);
       console.log(surveyResultsDto);
-      //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
       const headers = { Authorization: `Bearer ${token}` };
       console.log('Request headers:', headers);
       await axios.delete(`http://localhost:3000/surveys/${surveyId}/${roomId}/close-room`, { 
@@ -225,7 +232,7 @@ const SurveyResultsPage = () => {
     } as SurveyRoomResultDto;
   };
   if (!doesRoomExist) {
-    return <RoomErrorPage />; // Render an error component if the room does not exist
+    return <RoomErrorPage />; 
   }
   return (
   <div className="flex flex-col items-center space-y-5">

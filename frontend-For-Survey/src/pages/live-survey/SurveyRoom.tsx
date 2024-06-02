@@ -25,7 +25,9 @@ const SurveyRoom = () => {
     const [redirectToMenu, setRedirectToMenu] = useState(false);
 
     const {token} = useAuth();
-    
+
+    const [formSubmitted, setFormSubmitted] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -52,7 +54,6 @@ const SurveyRoom = () => {
       const joinRoom = async () => {
         let deviceId = localStorage.getItem('device-id');
         if (!deviceId) {
-          // If not, generate a new one and store it
           deviceId = await getDeviceId();
           localStorage.setItem('device-id', deviceId);
         }
@@ -62,7 +63,6 @@ const SurveyRoom = () => {
           'Device-Id': deviceId
         };
 
-        // Join the room
         try {
           console.log('Joining room with ID:', roomId);
           await axios.post(`http://localhost:3000/surveys/${roomId}/join`, {}, { headers });
@@ -96,6 +96,14 @@ const SurveyRoom = () => {
         }, 5000);
       }
     }, [submissionStatus]);
+
+    useEffect(() => {
+      if (formSubmitted) {
+        setTimeout(() => {
+          setRedirectToMenu(true);
+        }, 3000);
+      }
+    }, [formSubmitted]);
   
     const handleOptionChange = (questionId: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const target = e.target as HTMLInputElement;
@@ -174,77 +182,80 @@ const SurveyRoom = () => {
           }
         }
         setRedirectToMenu(true);
+        setFormSubmitted(true);
       }
     };
     if (!doesRoomExist) {
       return <RoomErrorPage />; // Render an error component if the room does not exist
     }
     return (
-      <div>
-        {roomError ? (
-          <p>{roomError}</p>
-        ) : (
-        <div>
-        {submissionStatus === true ? (
-          <p>Thanks for submitting the survey! You will be redirected to the menu in a few seconds.</p>
-        ) : (
-        survey && (
-          <>
-            <h2>{survey.title}</h2>
-            <p>ID: {survey.id}</p>
-            <h3>Questions:</h3>
-            <ul>
-            {survey.questions && survey.questions.map((question, index) => (
-              <li key={index}>
-                <p>{question.title}</p>
-                <p>Type: {question.type}</p>
-                {question.type === QuestionType.TEXT ? (
-                  <textarea
-                    name={`question-${question.id}`}
-                    value={selectedOptions[question.id] || ''}
-                    onChange={(e) => handleOptionChange(question.id, e)}
-                  />
-                ) : (
-                  question.possibleChoices && (
-                    <div>
-                      <p>Possible Choices:</p>
-                      {question.possibleChoices.map((choice, choiceIndex) => (
-                        <label key={choiceIndex}>
-                          <input
-                            type={question.type === QuestionType.ONE_CHOICE ? "radio" : "checkbox"}
-                            name={`question-${question.id}`}
-                            value={choice}
-                            checked={Array.isArray(selectedOptions[question.id]) 
-                              ? selectedOptions[question.id].includes(choice)
-                              : selectedOptions[question.id] === choice}
-                              onChange={(e) => handleOptionChange(question.id, e)}
-                          />
-                          {choice}
-                        </label>
-                      ))}
-                    </div>
-                  )
-                )}
-              </li>
-            ))}
-            </ul>
-            <button onClick={handleSubmit}>Wyślij</button>
-            {errorMessage && 
-              <div className="alert alert-danger" role="alert">
-                {errorMessage}
-              </div>
-            }
-            {redirectToMenu && 
-              <button className="btn btn-primary" onClick={() => window.location.href = '/menu'}>
-                Go to Menu
-              </button>
-            }
-          </>
-        )
+      <div className='d-flex justify-content-center align-items-center bg-secondary vh-100'>
+        <div className='bg-white p-3 rounded w-25'>
+          {roomError ? (
+            <p>{roomError}</p>
+          ) : (
+          <div>
+          {submissionStatus === true ? (
+            <p>Thanks for submitting the survey! You will be redirected to the menu in a few seconds.</p>
+          ) : (
+          survey && (
+            <>
+              <h2>{survey.title}</h2>
+              <p>ID: {survey.id}</p>
+              <h3>Questions:</h3>
+              <ul>
+              {survey.questions && survey.questions.map((question, index) => (
+                <li key={index}>
+                  <p>{question.title}</p>
+                  <p>Type: {question.type}</p>
+                  {question.type === QuestionType.TEXT ? (
+                    <textarea
+                      name={`question-${question.id}`}
+                      value={selectedOptions[question.id] || ''}
+                      onChange={(e) => handleOptionChange(question.id, e)}
+                    />
+                  ) : (
+                    question.possibleChoices && (
+                      <div>
+                        <p>Possible Choices:</p>
+                        {question.possibleChoices.map((choice, choiceIndex) => (
+                          <label key={choiceIndex}>
+                            <input
+                              type={question.type === QuestionType.ONE_CHOICE ? "radio" : "checkbox"}
+                              name={`question-${question.id}`}
+                              value={choice}
+                              checked={Array.isArray(selectedOptions[question.id]) 
+                                ? selectedOptions[question.id].includes(choice)
+                                : selectedOptions[question.id] === choice}
+                                onChange={(e) => handleOptionChange(question.id, e)}
+                            />
+                            {choice}
+                          </label>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </li>
+              ))}
+              </ul>
+              <button onClick={handleSubmit}>Wyślij</button>
+              {errorMessage && 
+                <div className="alert alert-danger" role="alert">
+                  {errorMessage}
+                </div>
+              }
+              {redirectToMenu && 
+                <button className="btn btn-secondary" onClick={() => window.location.href = '/menu'}>
+                  Go to Menu
+                </button>
+              }
+            </>
+          )
+        )}
+      
+        </div>
       )}
-    
-      </div>
-    )}
+        </div>
       </div>
     );
   };

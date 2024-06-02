@@ -6,7 +6,6 @@ export const getDeviceId = async (): Promise<string> => {
     const result = await fp.get();
     const visitorId = result.visitorId;
 
-    // Store fingerprint in IndexedDB
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("deviceDatabase", 1);
 

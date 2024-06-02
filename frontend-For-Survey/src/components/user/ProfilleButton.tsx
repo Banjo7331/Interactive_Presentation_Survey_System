@@ -9,9 +9,7 @@ function ProfileButton({ nickname }: { nickname: string }) {
   const handleShow = () => setShow(true);
   
   const handleLogout = () => {
-    // Remove the token from cookies
     document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    // Redirect the user to the login page
     navigate('/login');
   };
 

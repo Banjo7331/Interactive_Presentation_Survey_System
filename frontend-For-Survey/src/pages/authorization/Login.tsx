@@ -18,10 +18,8 @@ export default function Login() {
         .then(res =>{ 
           if (res.data) {
               const token = res.data;
-              //localStorage.setItem('token', token);
-              // Ustaw czas życia ciasteczka (np. na 1 godzinę)
               const expiryDate = new Date();
-              expiryDate.setTime(expiryDate.getTime() + (1 * 60 * 20 * 1000)); // 1 godzina w milisekundach
+              expiryDate.setTime(expiryDate.getTime() + (1 * 60 * 20 * 1000)); 
               document.cookie = `token=${token}; path=/; expires=${expiryDate.toUTCString()}`;
 
               console.log('Token set as cookie:', token);

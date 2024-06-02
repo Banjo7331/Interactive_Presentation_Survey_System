@@ -35,7 +35,6 @@ export default function Menu() {
     if (isAuthenticated) {
       navigate('/createSurvey');
     } else {
-      // Redirect to the login page
       navigate('/login');
     }
   };
@@ -43,14 +42,13 @@ export default function Menu() {
     if (isAuthenticated) {
       navigate('/getSurvey');
     } else {
-      // Redirect to the login page
       navigate('/login');
     }
   };
 
   return (
   <div style={{ 
-    background: 'repeating-linear-gradient(30deg, #ffffff, #ffffff 100px, #fafafa 100px, #fafafa 200px)', 
+    background: 'repeating-linear-gradient(30deg, #ffffff, #ffffff 400px, #fafafa 400px, #fafafa 800px)', 
     width: '100%', 
     height: '100vh' 
   }}>
@@ -64,7 +62,6 @@ export default function Menu() {
     </div>
    </nav>
     <Routes>
-      {/* Nested route for the createSurvey component */}
         <Route path="createSurvey" element={<CreateSurvey />} />
         <Route path="getSurvey" element={<GetSurvey />} />
         <Route path="profile/:userNickName?" element={<UserProfile />} />

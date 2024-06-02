@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
-import axios from 'axios'; // Assuming you're using axios for HTTP requests
+import axios from 'axios'; 
 import { useAuth } from '../../utils/authorization/IsLogged';
 import ConfirmationWindow from '../../components/user/ConfirmationWindow';
 import ChangePasswordWindow from '../../components/user/ChangePasswordWindow';
@@ -9,7 +9,6 @@ import { SurveyRoomResult } from '../../entities/live-survey/room/roomResult.ent
 
 
  const UserProfile = () => {
-  //const { userNickName } = useParams();
 
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [surveyResults, setSurveyResults] = useState<SurveyRoomResult[]>([]);
@@ -31,7 +30,6 @@ import { SurveyRoomResult } from '../../entities/live-survey/room/roomResult.ent
             if (!isAuthenticated ) {
                 navigate('/login');
             }
-            //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
             const headers = { Authorization: `Bearer ${token}` };
             console.log('Request headers:', headers);
             const response = await axios.get(`http://localhost:3000/surveys/user/surveys`,{ headers })
@@ -114,7 +112,6 @@ import { SurveyRoomResult } from '../../entities/live-survey/room/roomResult.ent
       if (isAuthenticated) {
         navigate('/');
       } else {
-        // Redirect to the login page
         navigate('/login');
       }
     };

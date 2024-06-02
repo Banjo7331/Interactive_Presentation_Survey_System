@@ -18,9 +18,9 @@ function WaitingForVerificationPage() {
       } catch (error) {
         console.error(error);
       }
-    }, 5000); // Check every 5 seconds
+    }, 5000); 
 
-    return () => clearInterval(intervalId); // Clean up on component unmount
+    return () => clearInterval(intervalId); 
   }, []);
 
   useEffect(() => {

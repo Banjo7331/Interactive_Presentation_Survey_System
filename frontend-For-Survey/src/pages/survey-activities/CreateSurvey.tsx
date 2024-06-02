@@ -22,7 +22,6 @@ export default function CreateSurvey() {
   };
 
   const handleAddQuestion = () => {
-    // Jeśli formData jest puste, dodaj nowe pytanie
     if (!formData || !formData.createQuestionDtos || formData.createQuestionDtos.length === 0) {
       setFormData({
         ...formData,
@@ -35,19 +34,14 @@ export default function CreateSurvey() {
   
     const lastQuestion = formData.createQuestionDtos[formData.createQuestionDtos.length - 1];
   
-    // Sprawdź, czy tytuł i typ pytania są ustawione
     if (!lastQuestion.title || !lastQuestion.type) {
-      // Możesz wyświetlić komunikat o błędzie lub coś w tym rodzaju
       return;
     }
   
-    // Jeśli typ pytania nie jest 'text-answer', sprawdź, czy są jakiekolwiek możliwe wybory
     if (lastQuestion.type !== 'text-answer' && lastQuestion.possibleChoices.length === 0) {
-      // Możesz wyświetlić komunikat o błędzie lub coś w tym rodzaju
       return;
     }
   
-    // Dodaj nowe pytanie
     setFormData({
       ...formData,
       createQuestionDtos: [
@@ -62,7 +56,6 @@ export default function CreateSurvey() {
     const updatedQuestions = [...formData.createQuestionDtos];
     updatedQuestions[index][field] = e.target.value;
   
-    // If the question type is changed to 'text-answer', reset possibleChoices
     if (field === 'type' && e.target.value === 'text-answer') {
       updatedQuestions[index].possibleChoices = [];
     }
@@ -73,11 +66,9 @@ export default function CreateSurvey() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      //const token = localStorage.getItem('token');
       if (!isAuthenticated) {
         navigate('/');
       }else{
-        //const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]; // Pobierz token, pomijając prefiks "token="
         const headers = { Authorization: `Bearer ${token}` };
         console.log('Request headers:', headers);
         const response = await axios.post(
@@ -102,11 +93,9 @@ export default function CreateSurvey() {
   };
 
   const handleQuestionClick = (index: number) => {
-    // Jeśli kliknięto na już rozwinięte pytanie, zwij je
     if (expandedQuestionIndex === index) {
       setExpandedQuestionIndex(null);
     } else {
-      // W przeciwnym razie rozwij kliknięte pytanie i zwij wszystkie inne
       setExpandedQuestionIndex(index);
     }
   };

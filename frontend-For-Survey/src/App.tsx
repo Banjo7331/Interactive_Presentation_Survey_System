@@ -12,13 +12,12 @@ import WaitingForVerificationPage from './pages/verification/WaitingForVerificat
 
 function App() {
   const { login } = useAuth();
-  //localStorage.removeItem('token');
   useEffect(() => {
     const tokenCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
     if (tokenCookie) {
       const token = tokenCookie.split('=')[1];
       console.log('Token found in cookie:', token);
-      login(token); // Ustawienie stanu autentykacji na podstawie ciasteczka
+      login(token); 
     }
   }, [login]);
   
