@@ -117,7 +117,6 @@ const SurveyResultsPage = () => {
     });
   };
 
-  const [isHovered, setIsHovered] = useState<{ questionIndex: number, answerIndex: number } | null>(null);
   const colors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#3F51B5', '#546E7A', '#D4526E', '#8D5B4C', '#F86624', '#D7263D', '#1B998B', '#2E294E', '#F46036', '#E2C044'];
 
   const charts = survey?.questions.map((question, index) => {
@@ -127,29 +126,21 @@ const SurveyResultsPage = () => {
         <div key={index} className={`w-3/4 p-5 mt-${index * 5} border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
           <div className="w-1/2">
             <h3>{question.title}</h3>
-            <div className="flex flex-row flex-wrap justify-center">
-              <button onClick={() => handlePrev(index)} disabled={currentAnswerIndices[index] === 0}>←</button>
-              <div 
-                className={`m-2 p-2 border-2 border-gray-300 rounded-lg shadow-lg cursor-pointer transition-transform duration-200 ease-in-out`}
-                style={{ 
-                  transform: isHovered?.questionIndex === index && isHovered?.answerIndex === currentAnswerIndices[index] ? 'scale(1.05)' : 'scale(1)', 
-                  width: '150px', 
-                  height: '150px', 
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onMouseEnter={() => setIsHovered({ questionIndex: index, answerIndex: currentAnswerIndices[index] })}
-                onMouseLeave={() => setIsHovered(null)}
-              >
-                <p style={{ display: isHovered?.questionIndex === index && isHovered?.answerIndex === currentAnswerIndices[index] ? 'block' : 'none' }}>{textAnswers[currentAnswerIndices[index]]}</p>
+            <div className="flex flex-col items-center">
+              <div className="w-full flex justify-center">
+                <button onClick={() => handlePrev(index)} disabled={currentAnswerIndices[index] === 0 || textAnswers.length === 0}>←</button>
               </div>
-              <button onClick={() => handleNext(index)} disabled={currentAnswerIndices[index] === textAnswers.length - 1}>→</button>
+              <div className="m-1 p-2 border-2 border-gray-300 rounded-lg shadow-lg transition-transform duration-200 ease-in-out cursor-pointer">
+                <p>{textAnswers[currentAnswerIndices[index]]}</p>
+              </div>
+              <div className="w-full flex justify-center">
+                <button onClick={() => handleNext(index)} disabled={currentAnswerIndices[index] === textAnswers.length - 1 || textAnswers.length === 0}>→</button>
+              </div>
             </div>
           </div>
         </div>
       );
-    } else {
+    } else  {
       const choiceCounts = question.possibleChoices.reduce((counts, choice) => {
         counts[choice] = 0;
         return counts;
