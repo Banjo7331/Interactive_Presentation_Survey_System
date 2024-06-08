@@ -57,7 +57,7 @@ The Interactive Survey Management App is designed for creating, managing, and sh
     docker-compose up --build
     ```
 
-5. Configure the `.env` file with your database settings:
+5. Configure the `.env` file with your database settings (add it in backend folder):
 
     ```
     DATABASE_TYPE=postgres
