@@ -1,15 +1,12 @@
 import { SurveyService } from "../services/survey.service";
-import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post, UseGuards, Request, UnauthorizedException, Delete, UsePipes, ValidationPipe, InternalServerErrorException, HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post, UseGuards, Request, Delete, InternalServerErrorException, HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
 import { SurveyWebSocketGateway } from "../websocket/websocket.gateway";
 import { Survey } from "src/typeorm/entities/surveyElm/Survey";
 import { CreateSurveyDto } from "../dtos/CreateSurvey.dto";
-import { AuthGuard } from "@nestjs/passport";
 import { JwtAuthGuard } from "src/authentication/guards/jwt.guard";
 import { SurveyRoomService } from "../services/surveyRoom.service";
 import { CreatedFilledSurveyDto } from "../dtos/CreateFilledSurvey.dto";
 import { FilledSurvey } from "src/typeorm/entities/surveyElm/FilledSurvey";
-import { QuestionTypeValidationPipe } from "../pipes/question-type-validation.pipe";
-import { SurveyRoomResult } from "src/typeorm/entities/surveyElm/SurveyRoomResult";
 import { CreateSurveyRoomResultDto } from "../dtos/CreateSurveyRoomResult.dto";
 import { DeviceGuard } from "src/authentication/guards/device.guard";
 import { EitherGuard } from "src/authentication/guards/either.guard";
@@ -37,8 +34,6 @@ export class SurveyController {
   @UseGuards(EitherGuard)
   @Get(':id')
   getSurveyById(@Param('id',ParseIntPipe) surveyId:number,@Request() req) {
-    //const user = req.user;
-    //console.log(user);
     const survey = this.surveyService.getSurveyById(surveyId);
     return survey;
   }
@@ -65,7 +60,6 @@ export class SurveyController {
   @Post(':surveyId/:roomId/submit')
   async submitSurvey(@Request() req,@Param('roomId') roomId: string, @Param('surveyId', ParseIntPipe) surveyId: number, @Body() createSurveyAnswerData: CreatedFilledSurveyDto): Promise<FilledSurvey> {
     const deviceId = req.headers['device-id'];
-    //createSurveyAnswerData.user = deviceId;
     const room = this.roomService.getRoomById(roomId);
     if (!room) {
       throw new NotFoundException(`Room with ID ${roomId} not found`);
@@ -77,7 +71,6 @@ export class SurveyController {
 
     const submittedSurvey = await this.surveyService.submitSurvey(surveyId, createSurveyAnswerData);
     
-    // Update the room session
     room.submissions.add(deviceId);
     
     await this.surveyGateway.handleSurveySubmission(null,submittedSurvey);
@@ -99,7 +92,7 @@ export class SurveyController {
   @UseGuards(JwtAuthGuard)
   @Delete(':surveyId/:roomId/close-room')
   closeRoom(@Param('roomId') roomId: string, @Param('surveyId', ParseIntPipe) surveyId: number, @Request() req: any, @Body() surveyRoomResultDto: CreateSurveyRoomResultDto) {
-    const userId = req.user.id; // Get the user's ID from the request
+    const userId = req.user.id; 
     surveyRoomResultDto.user = userId;
     this.roomService.closeRoom(roomId, userId,surveyRoomResultDto, surveyId);
     return { message: 'Room closed successfully' };
@@ -108,9 +101,8 @@ export class SurveyController {
   @Post(':id/join')
   async joinRoom(@Param('id') roomId: string, @Request() req: any) {
   try {
-    const deviceId = req.headers['device-id']; // Get the participant's ID from the request
+    const deviceId = req.headers['device-id']; 
 
-    // Get the room
     const room = this.roomService.getRoomById(roomId);
     console.log(room);
     if (!room) {
@@ -119,7 +111,6 @@ export class SurveyController {
     if (room.participants.has(deviceId)) {
       return { message: 'You have already joined this room' };
     }
-    // Check if the participant has already submitted their survey
     if (room.submissions.has(deviceId)) {
       throw new HttpException('You have already submitted your survey and cannot rejoin the room', HttpStatus.FORBIDDEN);
     }

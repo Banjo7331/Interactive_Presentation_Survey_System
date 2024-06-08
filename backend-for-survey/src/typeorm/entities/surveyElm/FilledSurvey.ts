@@ -19,8 +19,4 @@ export class FilledSurvey {
   @JoinColumn({ name: 'surveyId' })
   survey: Survey;
   
-  
-  //deviceId: User;
-
-  
 }

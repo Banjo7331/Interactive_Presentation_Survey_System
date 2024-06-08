@@ -7,6 +7,7 @@ export default function Login() {
     username: '',
     password: ''
   })
+  const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate()
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
@@ -29,7 +30,14 @@ export default function Login() {
               console.log('Token not found in response data.');
           }
          })
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          if (err.response && err.response.status === 401) {
+            setLoginError('Wrong Password or UserName');
+          } else {
+            setLoginError('Error during login. Please try again.');
+          }
+        });
   };
 
   return (
@@ -48,6 +56,7 @@ export default function Login() {
                     onChange={handleInput} className="form-control rounded-0"></input>
                 </div>
                 <button type='submit'className='btn btn-success w-100 rounded-0'>Log in</button>
+                {loginError && <p style={{ color: 'red' }}>{loginError}</p>}
                 <p>You are agree to terms and policies</p>
                 <Link to="/signup"className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none'>Create Account</Link>
             </form>

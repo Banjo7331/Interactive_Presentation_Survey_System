@@ -3,7 +3,7 @@ export interface SurveyRoom {
     surveyId: string;
     maxUsers: number;
     surveyData: any;
-    participants: Set<string>; // Set of participant IDs
+    participants: Set<string>; 
     submissions: Set<string>;
     link: string;
     creatorId: string;

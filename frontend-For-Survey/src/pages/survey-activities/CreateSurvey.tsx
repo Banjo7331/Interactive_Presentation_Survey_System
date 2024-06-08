@@ -69,6 +69,14 @@ export default function CreateSurvey() {
       if (!isAuthenticated) {
         navigate('/');
       }else{
+
+        for (const question of formData.createQuestionDtos) {
+          if ((question.type !== 'text-answer') && question.possibleChoices.length === 0) {
+            setErrorMessage('Pytanie typu "multiple-answer" lub "single-answer" musi mieć co najmniej jedną odpowiedź.');
+            return;
+          }
+        }
+
         const headers = { Authorization: `Bearer ${token}` };
         console.log('Request headers:', headers);
         const response = await axios.post(

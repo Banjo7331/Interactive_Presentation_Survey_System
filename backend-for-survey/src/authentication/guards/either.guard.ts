@@ -14,7 +14,6 @@ export class EitherGuard implements CanActivate {
         return true;
       }
     } catch (error) {
-      // JwtAuthGuard failed, try DeviceGuard
     }
 
     try {
@@ -23,7 +22,6 @@ export class EitherGuard implements CanActivate {
         return true;
       }
     } catch (error) {
-      // DeviceGuard also failed
     }
 
     return false;

@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, Length } from "class-validator";
 export class CreateUserDto{
     @IsString({ message: 'UserName must be a string.' })
     @IsNotEmpty({ message: 'UserName cannot be empty.' })
-    @Length(8, 25, { message: `UserName for Question must be between $constraint1 and $constraint2 characters.` })
+    @Length(8, 25, { message: `UserName must be between $constraint1 and $constraint2 characters.` })
     username: string;
 
     @IsString({ message: 'Password must be a string.' })

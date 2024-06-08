@@ -1,19 +1,12 @@
 import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/typeorm/entities/userElm/User';
 import { UserService } from 'src/users/services/user.service';
 import { AuthPayloadDto } from './dto/auth.dto';
 import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 
-interface JwtPayload {
-  userId: number;
-  email: string;
-  iat?: number;
-  exp?: number;
-}
 
 @Injectable()
 export class AuthService {
@@ -31,8 +24,6 @@ export class AuthService {
     }
   }
   async generateVerificationToken(createUserDto: CreateUserDto) {
-    // Generate a unique token with the user's information encoded in it
-    // This is just a placeholder implementation.
     const { username, email, password } = createUserDto;
 
     const payload = { username, email, password };
@@ -87,9 +78,7 @@ export class AuthService {
 
   async verifyTempUser(token: string) {
     try {
-      // Verify the token and get the user's information
       const createUserDto = jwt.verify(token, 'abc123') as CreateUserDto;
-      console.log("FAKIN USER ",createUserDto);
       return createUserDto;
     } catch (error) {
       console.log('Token verification failed:', error);

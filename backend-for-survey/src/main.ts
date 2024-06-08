@@ -8,7 +8,6 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
-  //app.use(new CorsMiddleware().use);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const corsOptions: CorsOptions = {
     origin: ['http://localhost:5173', 'http://172.17.34.190:5173'], 
@@ -18,7 +17,6 @@ async function bootstrap() {
     credentials: true,
   };
 
-  // Enable CORS with the defined options
   app.enableCors(corsOptions);
   
   await app.listen(3000);
